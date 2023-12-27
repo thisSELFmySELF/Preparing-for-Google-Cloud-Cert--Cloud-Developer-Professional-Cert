@@ -1,0 +1,1318 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Using Cloud PubSub with Cloud Run [APPRUN] | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-484f429ecd41bc910509948cecaf71d98c510234.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-644b7af44e10b6334d7881042d33e7eac427c3b8.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-011e84c80a51010837f8d7868d0972aebf80b2b1.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="H3xm+cnAiVGBHXCI/rZe2ZSuntO9ORsZlqSpD1OoTxOxq9DZu3oukKHUJXEOfLrJmdvGVuhKyGxhjgG8E9gESw==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;barker&quot;,&quot;community_forum&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;used_in&quot;,&quot;content_provider_admin&quot;,&quot;program_announcements&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;course_upgrade&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;program_learning_assignment&quot;,&quot;teams&quot;,&quot;peer_assignment&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;canonical_domain_redirect&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;search_updates&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='In this lab you will learn how Cloud Pub/Sub can be used with Cloud Run.' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Using Cloud PubSub with Cloud Run [APPRUN] | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='In this lab you will learn how Cloud Pub/Sub can be used with Cloud Run.' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32771589?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32771589?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-2bce1f34bff374bb8e1de389ce3467c39fc4868b.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="ea945b8ee1f45fdb" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Using Cloud PubSub with Cloud Run [APPRUN]</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32771589?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32771589?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32771589?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32771589?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32771589?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32771589?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32771589?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32771589?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32771589?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32771589?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32771589?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32771589?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32771589?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32771589?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32771589?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32771589?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32771589?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32771589?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32771589?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<div class='lab-assessment__tab js-open-lab-assessment-panel'>
+<button class='js-lab-assessment-total-score'>
+—/100
+</button>
+</div>
+<div aria-labelledby='lab-assessment-checkpoint' class='lab-assessment__panel js-lab-assessment-panel' role='dialog'>
+<div class='lab-assessment__panel__header'>
+<h4 id='lab-assessment-checkpoint'>Checkpoints</h4>
+<ql-icon-button class='js-close-lab-assessment-panel' icon='arrow_forward' label='Close dialog'></ql-icon-button>
+</div>
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Public Cloud Run service
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Public Cloud Run service' step_no='1'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-1'>
+</span>
+/ 20
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Private Cloud Run service
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Private Cloud Run service' step_no='2'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-2'>
+</span>
+/ 20
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+PubSub Topic
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='PubSub Topic' step_no='3'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-3'>
+</span>
+/ 20
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Service account
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Service account' step_no='4'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-4'>
+</span>
+/ 20
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+PubSub Subscription
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='PubSub Subscription' step_no='5'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-5'>
+</span>
+/ 20
+</p>
+</div>
+</div>
+
+</div>
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Using Cloud PubSub with Cloud Run [APPRUN]&quot;,&quot;lab_name&quot;:&quot;Using Cloud PubSub with Cloud Run [APPRUN]&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32771589' data-lab-billing-limit='0.0' data-lab-duration='2700' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:2700}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Using Cloud PubSub with Cloud Run [APPRUN]
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>45 minutes</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32771589/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.7045'></div>
+
+</a></div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">Overview</h2>
+<p>Pub/Sub enables applications to take advantage of efficient message queues.
+The service is compatible with a range of Google Cloud services, and in this lab, you learn how to integrate it with Cloud Run.</p>
+<p>This lab is based on resolving a customer use case by using serverless infrastructure. The lab features three high level sections that resolve a technical problem:</p>
+<ul>
+<li>Situational Overview</li>
+<li>Requirements Gathering</li>
+<li>Developing a minimal viable product</li>
+</ul>
+<h3>Objectives</h3>
+<p>In this lab, you learn to:</p>
+<ul>
+<li>Enable the Cloud Run API.</li>
+<li>Deploy microservices to Cloud Run.</li>
+<li>Create a Pub/Sub topic.</li>
+<li>Invoke a Cloud Run service from a Pub/Sub subscription.</li>
+</ul>
+<h3>Prerequisites</h3>
+<p>These labs are based on intermediate knowledge of Google Cloud. While the steps required are covered in the content, it would be helpful to have familiarity with any of the following products:</p>
+<ul>
+<li>Pub/Sub</li>
+<li>Cloud Run</li>
+</ul>
+<h2 id="step2">Setup and requirements</h2>
+<h4>Before you click the Start Lab button</h4>
+<ql-warningbox><strong>Note: Read these instructions.</strong>
+<p></p>
+Labs are timed and you cannot pause them. The timer, which starts when you click <b>Start Lab</b>, shows how long Google Cloud resources will be made available to you.</ql-warningbox>
+<p>This Qwiklabs hands-on lab lets you do the lab activities yourself in a real cloud environment, not in a simulation or demo environment. It does so by giving you new, temporary credentials that you use to sign in and access Google Cloud for the duration of the lab.</p>
+<h4>What you need</h4>
+<p>To complete this lab, you need:</p>
+<ul>
+<li>Access to a standard internet browser (Chrome browser recommended).</li>
+<li>Time to complete the lab.</li>
+</ul>
+<ql-warningbox><strong>Note: </strong>If you already have your own personal Google Cloud account or project, do not use it for this lab.</ql-warningbox>
+<ql-infobox><strong>Note: </strong>If you are using a Pixelbook, open an Incognito window to run this lab.</ql-infobox>
+
+<h4>How to start your lab and sign in to the Console</h4>
+<ol>
+<li>
+<p>Click the <strong>Start Lab</strong> button. If you need to pay for the lab, a pop-up opens for you to select your payment method.
+On the left is a panel populated with the temporary credentials that you must use for this lab.</p>
+<p><img alt="Credentials panel" src="https://cdn.qwiklabs.com/%2FtHp4GI5VSDyTtdqi3qDFtevuY014F88%2BFow%2FadnRgE%3D"></p>
+</li>
+<li>
+<p>Copy the username, and then click <strong>Open Google Console</strong>.
+The lab spins up resources, and then opens another tab that shows the <strong>Choose an account</strong> page.</p>
+<ql-infobox><strong>Note: </strong>Open the tabs in separate windows, side-by-side.</ql-infobox>
+</li>
+<li>
+<p>On the Choose an account page, click <strong>Use Another Account</strong>. The Sign in page opens.</p>
+<p><img alt="Choose an account dialog box with Use Another Account option highlighted " src="https://cdn.qwiklabs.com/eQ6xPnPn13GjiJP3RWlHWwiMjhooHxTNvzfg1AL2WPw%3D"></p>
+</li>
+<li>
+<p>Paste the username that you copied from the Connection Details panel. Then copy and paste the password.</p>
+</li>
+</ol>
+<ql-warningbox><strong>Note: </strong>You must use the credentials from the Connection Details panel. Do not use your Google Cloud Skills Boost credentials. If you have your own Google Cloud account, do not use it for this lab (avoids incurring charges).</ql-warningbox>
+<ol start="5">
+<li>Click through the subsequent pages:</li>
+</ol>
+<ul>
+<li>Accept the terms and conditions.</li>
+<li>Do not add recovery options or two-factor authentication (because this is a temporary account).</li>
+<li>Do not sign up for free trials.</li>
+</ul>
+<p>After a few moments, the Cloud console opens in this tab.</p>
+<ql-infobox><strong>Note: </strong>You can view the menu with a list of Google Cloud Products and Services by clicking the <b>Navigation menu</b> at the top-left.
+<img alt="Cloud Console Menu" src="https://cdn.qwiklabs.com/9vT7xPlxoNP%2FPsK0J8j0ZPFB4HnnpaIJVCDByaBrSHg%3D">
+</ql-infobox>
+
+<h3>Activate Google Cloud Shell</h3>
+<p>Google Cloud Shell is a virtual machine that is loaded with development tools. It offers a persistent 5GB home directory and runs on the Google Cloud.</p>
+<p>Google Cloud Shell provides command-line access to your Google Cloud resources.</p>
+<ol>
+<li>
+<p>In Cloud console, on the top right toolbar, click the Open Cloud Shell button.</p>
+<p><img alt="Highlighted Cloud Shell icon" src="https://cdn.qwiklabs.com/00tA48qOVOyHrSa1DA7LwccfwQ9Z%2BE6dkvQ1MYPHzhQ%3D"></p>
+</li>
+<li>
+<p>Click <strong>Continue</strong>.</p>
+</li>
+</ol>
+<p>It takes a few moments to provision and connect to the environment. When you are connected, you are already authenticated, and the project is set to your <em>PROJECT_ID</em>. For example:</p>
+<p><img alt="Project ID highlighted in the Cloud Shell Terminal" src="https://cdn.qwiklabs.com/hmMK0W41Txk%2B20bQyuDP9g60vCdBajIS%2B52iI2f4bYk%3D"></p>
+<p><strong>gcloud</strong> is the command-line tool for Google Cloud. It comes pre-installed on Cloud Shell and supports tab-completion.</p>
+<ul>
+<li>You can list the active account name with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud auth list
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - @.com (active)
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - google1623327_student@qwiklabs.net
+ </ql-code-block>
+<ul>
+<li>You can list the project ID with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud config list project
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+[core]
+project = 
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+[core]
+project = qwiklabs-gcp-44776a13dea667a6
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>
+  Full documentation of <strong>gcloud</strong> is available in the
+  <a href="https://cloud.google.com/sdk/gcloud" target="_blank">
+    gcloud CLI overview guide
+  </a>.
+</ql-infobox>
+
+<h2 id="step3">Situational overview</h2>
+<p><img alt="Critter Junction logo" src="https://cdn.qwiklabs.com/Zpj%2B%2FbgFdnXXouSTEeCdBcBKdYU1XbAfvIzHTkWCvFE%3D"></p>
+<p>In this lab, you will help the development team at Critter Junction investigate the use of Pub/Sub for their requirements.
+The team would like to explore how to perform efficient queue processing within their applications.</p>
+<h3>Requirements gathering</h3>
+<p>The team at Critter Junction has a public web application and several microservices built on Google Cloud.
+Communication between the microservices is critical and needs a resilient form of messaging to be established between each application component.</p>
+<p>The development team's previous attempts were unsuccessful due to the microservices needing to know a lot about each other ( <a href="https://en.wikipedia.org/wiki/Coupling_(computer_programming)" target="_blank">High Coupling</a>). In addition, if a service was temporarily unavailable, messages would be lost.</p>
+<p>The team needs a solution that includes a level of resilience without introducing additional service dependencies (Low Coupling) into their systems. Now that you know a bit more about Critter Junction and the issues they face, try to prioritize the key criteria for a solution.</p>
+<h3>Defining Critter Junction priorities</h3>
+<p>To ascertain the key use cases and priorities, initial discussions are held with the Critter Junction stakeholders.
+The results of the discussions are shown below:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Ref</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>User Story</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As a lead developer, I want to ensure that messaging is resilient, so service operations will be restored without needing manual intervention.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As a program manager, I want services to be capable of scaling seamlessly so additional transactional load does not lead to system instability. </p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As an operations lead, I want services to be managed so staff does not need to be reassigned from important maintenance work.</p>
+</td>
+</tr>
+</table>
+<p>From a discussion with the team leads, the following high level tasks are defined:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Ref</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Definition of Done</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Establish an asynchronous component for inter-service communication.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Implement the proven scalability of the solution.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Services must run unsupervised.</p>
+</td>
+</tr>
+</table>
+<p>The team at Critter Junction is keen to define a solution that can be implemented quickly. In consideration of the requirements, the development team narrows their options down to:</p>
+<ul>
+<li>Pub/Sub</li>
+<li>Cloud Tasks</li>
+</ul>
+<p>See <a href="https://cloud.google.com/pubsub/docs/tasks-vs-pubsub" target="_blank">Pub/Sub versus Cloud Tasks</a> to learn more.</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Product</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Use case</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Choice</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong><em>Pub/Sub</em></strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong><em>"Optimal for more general event data ingestion and distribution patterns where some degree of control over execution can be sacrificed."</em></strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><img alt="green check mark" src="https://cdn.qwiklabs.com/%2Fcdnq2W0DWPihX1wPCluHHVpKycEXsk%2B0xYWPSKGX2k%3D" style="max-width:35.00px;"></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Cloud Tasks</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>"Appropriate for use cases where a task producer needs to defer or control the execution timing of a specific webhook or remote procedure call."</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><img alt="red incorrect mark" src="https://cdn.qwiklabs.com/Bq48ta3Kt7VR%2BUxCvSTQE9LpZ6TeXbA22XpSQnkOuQw%3D" style="max-width:37.69px;"></p>
+</td>
+</tr>
+</table>
+<p>After considering the requirements, the development team chooses Pub/Sub because they only require a push based distribution pattern. The following high level architecture diagram summarizes the minimal viable product (MVP) that they need to investigate.</p>
+<p><img alt="The MVP architecture diagram" src="https://cdn.qwiklabs.com/91ZhY5Zo%2F7HuSfGIMzAIRPynsyJHs7YsaYLWAd5sWOA%3D"></p>
+<p>In the proposed solution, Pub/Sub will be used to handle asynchronous messages between services.</p>
+<h2 id="step4">Task 1. Ensure that the Pub/Sub API is successfully enabled</h2>
+<p>To ensure access to the necessary API, re-enable the <strong>Pub/Sub</strong> API.</p>
+<ol>
+<li>
+<p>In the Google Cloud console <strong>Navigation menu</strong> (<img alt="navmenu" src="https://cdn.qwiklabs.com/tkgw1TDgj4Q%2BYKQUW4jUFd0O5OEKlUMBRYbhlCrF0WY%3D">), under <strong>APIs &amp; Services</strong>, click <strong>Library</strong>.</p>
+</li>
+<li>
+<p>In the <strong>Search</strong> box, type <strong>Pub/Sub</strong></p>
+</li>
+<li>
+<p>Click the result for <strong>Cloud Pub/Sub API</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Manage</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Disable API</strong>. If asked to confirm, click <strong>Disable</strong>.</p>
+</li>
+<li>
+<p>Again, when prompted <code>Do you want to disable Cloud Pub/Sub API and its dependent APIs?</code>, Click <strong>Confirm</strong>.</p>
+</li>
+<li>
+<p>To re-enable the API, click <strong>Enable</strong>.</p>
+<p>When the API has been re-enabled, the page displays information about the API.
+<img alt="Overview page of the Pub/Sub API" src="https://cdn.qwiklabs.com/aFR8h5x%2F3HV%2FfRcCGQIBW4kxNBF%2BIkLiuYslI%2FqQZlY%3D"></p>
+</li>
+</ol>
+<h2 id="step5">Task 2. Developing a minimal viable product (MVP)</h2>
+<p>Critter Junction has multiple Cloud Run services that they would like integrated with Pub/Sub.
+To build an MVP, the following tasks are required:</p>
+<ul>
+<li>Deploy a producer service</li>
+<li>Deploy a consumer service</li>
+<li>Create a service account</li>
+<li>Create a Pub/Sub topic</li>
+</ul>
+<h3>Deploy a producer service</h3>
+<p>Critter Junction specifies that the externally facing <em>store</em> service should be configured as a public endpoint, indicating these requirements:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Type</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Permission</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>URL Access</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>--allow-unauthenticated</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Make the service PUBLIC (Unauthenticated users can see it).</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Invoke Permission</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>allUsers</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Allow the service be invoked/triggered by anyone.</p>
+</td>
+</tr>
+</table>
+<p>The producer <em>store</em> service accepts public internet based connections for <em>purchase orders</em>.
+To do this, the service must not require authentication and must be able to be triggered by anyone.</p>
+<p>Information collected by this service will be passed to the backend consumer services.</p>
+<p>Configure and deploy the <em>store</em> service on Cloud Run. Execute the following commands in Cloud Shell.</p>
+<ol>
+<li>
+<p>Enable the <strong>Cloud Run</strong> API and configure your Shell environment:</p>
+<ql-code-block language="bash">
+gcloud services enable run.googleapis.com
+</ql-code-block>
+</li>
+<li>
+<p>Create a LOCATION environment variable:</p>
+<ql-code-block templated="">
+ LOCATION={{{project_0.default_region|us-central1}}}
+</ql-code-block>
+</li>
+<li>
+<p>Set the compute region:</p>
+<ql-code-block language="bash">
+gcloud config set compute/region $LOCATION
+</ql-code-block>
+</li>
+<li>
+<p>Deploy the <em>store</em> service:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+ gcloud run deploy store-service \
+  --image gcr.io/qwiklabs-resources/gsp724-store-service \
+  --region $LOCATION \
+  --allow-unauthenticated
+</ql-code-block>
+<p>Click <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="1">
+Deploy the Cloud Run store service
+</ql-activity-tracking></p>
+<p>Once the store service is deployed, the store service is publicly accessible over the internet.</p>
+<h3>Deploy a consumer service</h3>
+<p>The development team also needs to configure the <em>order</em> service that can be accessed at a private endpoint.
+Unlike the <em>store</em> service, the <em>order</em> service is not meant to be publicly accessible over the internet, and should only be invoked by an account with the appropriate permissions.</p>
+<p>For Cloud Run based services, this can be achieved by using the following settings:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Type</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Permission</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>URL Access</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>--no-allow-unauthenticated</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Make the service PRIVATE (Only authenticated users can see it).</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Invoke Role/Permission</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Cloud Run Invoker</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Only allow the service to be invoked by an account with the Cloud Run Invoker role.</p>
+</td>
+</tr>
+</table>
+<p>Configure and deploy the <em>order service</em>:</p>
+<ql-code-block language="bash">
+ gcloud run deploy order-service \
+  --image gcr.io/qwiklabs-resources/gsp724-order-service \
+  --region $LOCATION \
+  --no-allow-unauthenticated
+</ql-code-block>
+<p>Click <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="2">
+Deploy the Cloud Run order service
+</ql-activity-tracking></p>
+<p>Now only authenticated accounts can access and invoke the service.</p>
+<h2 id="step6">Pub/Sub overview</h2>
+<p>Pub/Sub is an asynchronous messaging service that decouples services that produce events from services that consume and process events.</p>
+<p>Pub/Sub core concepts:</p>
+<ul>
+<li>Topic</li>
+<li>Subscription</li>
+<li>Message</li>
+<li>Message attribute</li>
+</ul>
+<p>Pub/Sub requires a couple of options to be completed prior to successful deployment.
+In the Google Cloud console, Pub/Sub can be accessed under the Big Data menu option.</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Field</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Topic</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>A named resource to which messages are sent by publishers.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Subscription</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>A named resource representing the stream of messages from a single, specific topic, to be delivered to the subscribing application. For more details about subscriptions and message delivery semantics, see the <a href="https://cloud.google.com/pubsub/subscriber" target="_blank">Subscriber Guide</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Message</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>The combination of data and (optional) attributes that a publisher sends to a topic and is eventually delivered to subscribers.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Message attribute</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>A key-value pair that a publisher can define for a message. For example, key <strong><em>iana.org/language_tag</em></strong> and value <strong>en</strong> could be added to messages to mark them as readable by an English-speaking subscriber.</p>
+</td>
+</tr>
+</table>
+<p>Pub/Sub can be used in a wide variety of use cases, the most common of which are listed below:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Use Case</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Example</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Balancing workloads in network clusters</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>For example, a large queue of tasks can be efficiently distributed among multiple workers, such as Compute Engine instances.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Implementing asynchronous workflows</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>For example, an order processing application can place an order on a topic, from which it can be processed by one or more workers.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Distributing event notifications</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>For example, a service that accepts user signups can send notifications whenever a new user registers, and downstream services can subscribe to receive notifications of the event.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Refreshing distributed caches</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>For example, an application can publish invalidation events to update the IDs of objects that have changed.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Logging to multiple systems</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>For example, a Google Compute Engine instance can write logs to the monitoring system, to a database for later querying, and so on.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Data streaming from various processes or devices</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>For example, a residential sensor can stream data to backend servers hosted in the cloud.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Reliability improvement</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>For example, a single-zone Compute Engine service can operate in additional zones by subscribing to a common topic, to recover from failures in a zone or region.</p>
+</td>
+</tr>
+</table>
+<h2 id="step7">Task 3. Deploying Pub/Sub</h2>
+<p>Now that the producer (<code>store service</code>) and consumer (<code>order service</code>) services have been successfully deployed, you can focus on the main features of Pub/Sub. Using Pub/Sub requires two activities:</p>
+<ul>
+<li>Create a Topic</li>
+<li>Create a Subscription</li>
+</ul>
+<h3>Create a Topic</h3>
+<p>When an asynchronous (push) event is created on a topic, applications that subscribe to the topic will be able to process the associated messages.
+<a href="http://cloud.google.com/run/docs/events/pubsub-push" target="_blank">Push event processing with Pub/Sub</a> provides a scalable way to handle messaging on Google Cloud.</p>
+<p>The new Pub/Sub Topic will have following values.</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Field</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Value</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Name</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>ORDER_PLACED</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Encryption</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Google-managed key</p>
+</td>
+</tr>
+</table>
+<ol>
+<li>Create a Topic in Pub/Sub:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud pubsub topics create ORDER_PLACED
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>Messages that are sent using Pub/Sub are encoded as base64 on transmission, and need to be decoded on receipt.</ql-infobox>
+<p>Click <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="3">
+Create a Pub/Sub Topic
+</ql-activity-tracking></p>
+<p>By creating the Pub/Sub Topic, messages can now be independently stored and delivered in a resilient manner.</p>
+<p>You'll create a subscription in a subsequent task.</p>
+<h2 id="step8">Task 4. Creating a service account</h2>
+<p>To deliver a Pub/Sub message to a Cloud Run service, you need a Pub/Sub subscription. The subscription must be able to invoke the service using a service account with the appropriate permissions. In this lab, the consumer <em>order</em> service will be invoked by a subscription using the service account.</p>
+<p>To achieve this functionality, the following activities are required:</p>
+<ul>
+<li>Create a Service Account</li>
+<li>Bind the Invoker Role permissions to the service account</li>
+</ul>
+<h3>Service account creation</h3>
+<p>Create a new service account that will provide authenticated access.</p>
+<ol>
+<li>
+<p>Create a new service account called <strong>Order Initiator</strong>:</p>
+<ql-code-block language="bash">
+ gcloud iam service-accounts create pubsub-cloud-run-invoker \
+  --display-name "Order Initiator"
+</ql-code-block>
+</li>
+<li>
+<p>Confirm that the service account has been created:</p>
+<ql-code-block language="bash">
+ gcloud iam service-accounts list --filter="Order Initiator"
+</ql-code-block>
+</li>
+</ol>
+<p>Click <em>Check my progress</em> to verify the objective.</p>
+<ql-activity-tracking step="4">
+  Create a Service Account
+</ql-activity-tracking>
+<p>At this point, the <strong>Order Initiator</strong> service account is available. However, it does not have a role or permissions assigned.
+To assign it IAM permissions, you need to apply or bind role permissions to the service account.</p>
+<h3>Bind role permissions</h3>
+<p>To bind permissions to an account that is used to invoke a service on Cloud Run, you need the following information:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Category</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Service Name</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>The name of the deployed service to be invoked.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Member</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>The account to bestow the role permissions.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Region</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>The region in which the service is deployed.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Platform</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>The platform type (Cloud Run Managed, Cloud Run for Anthos, or Cloud Run for VMWare)</p>
+</td>
+</tr>
+</table>
+<ol>
+<li>
+<p>Bind the service account with the role <code>Cloud Run Invoker</code> on the <em>order service</em>:</p>
+<ql-code-block language="bash">
+ gcloud run services add-iam-policy-binding order-service --region $LOCATION \
+  --member=serviceAccount:pubsub-cloud-run-invoker@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com \
+  --role=roles/run.invoker --platform managed
+</ql-code-block>
+<p>The new service account has now been given permissions to invoke a Cloud Run service.</p>
+</li>
+<li>
+<p>Create an environment variable to store the project number:</p>
+<ql-code-block language="bash">
+ PROJECT_NUMBER=$(gcloud projects list \
+  --filter="qwiklabs-gcp" \
+  --format='value(PROJECT_NUMBER)')
+</ql-code-block>
+</li>
+<li>
+<p>Enable the project service account to create tokens:</p>
+<ql-code-block language="bash">
+ gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+   --member=serviceAccount:service-$PROJECT_NUMBER@gcp-sa-pubsub.iam.gserviceaccount.com \
+   --role=roles/iam.serviceAccountTokenCreator
+</ql-code-block>
+</li>
+</ol>
+<h2 id="step9">Task 5. Create a Pub/Sub subscription</h2>
+<p>In this task, you create the Pub/Sub subscription and configure it to use the new service account.</p>
+<ol>
+<li>
+<p>Create an environment variable to store the endpoint of the <em>order service</em>:</p>
+<ql-code-block language="bash">
+ ORDER_SERVICE_URL=$(gcloud run services describe order-service \
+   --region $LOCATION \
+   --format="value(status.address.url)")
+</ql-code-block>
+</li>
+<li>
+<p>Create a subscription and bind it to the <em>order service</em>:</p>
+<ql-code-block language="bash">
+ gcloud pubsub subscriptions create order-service-sub \
+   --topic ORDER_PLACED \
+   --push-endpoint=$ORDER_SERVICE_URL \
+   --push-auth-service-account=pubsub-cloud-run-invoker@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com
+</ql-code-block>
+</li>
+</ol>
+<p>Click  <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="5">
+Create a subscription
+</ql-activity-tracking></p>
+<h2 id="step10">Task 6. Testing the application</h2>
+<p>To test the application, send a sample JSON payload to the store service.</p>
+<ol>
+<li>
+<p>Create a file called <code>test.json</code> with the following content. You can use your choice of editor such as <code>nano</code>, <code>vi</code>, or the Cloud Shell editor.</p>
+<ql-code-block language="json">
+{
+ "billing_address": {
+   "name": "Kylie Scull",
+   "address": "6471 Front Street",
+   "city": "Mountain View",
+   "state_province": "CA",
+   "postal_code": "94043",
+   "country": "US"
+ },
+ "shipping_address": {
+   "name": "Kylie Scull",
+   "address": "9902 Cambridge Grove",
+   "city": "Martinville",
+   "state_province": "BC",
+   "postal_code": "V1A",
+   "country": "Canada"
+ },
+ "items": [
+   {
+     "id": "RW134",
+     "quantity": 1,
+     "sub-total": 12.95
+   },
+   {
+     "id": "IB541",
+     "quantity": 2,
+     "sub-total": 24.5
+   }
+ ]
+}
+</ql-code-block>
+</li>
+<li>
+<p>Create an environment variable to store the endpoint of the <em>store service</em>:</p>
+<ql-code-block language="bash">
+ STORE_SERVICE_URL=$(gcloud run services describe store-service \
+   --region $LOCATION \
+   --format="value(status.address.url)")
+</ql-code-block>
+</li>
+<li>
+<p>To test communication between the microservices and generate an order ID, post a message to the <em>store service</em>:</p>
+<ql-code-block language="bash">
+ curl -X POST -H "Content-Type: application/json" -d @test.json $STORE_SERVICE_URL
+</ql-code-block>
+<p>The output of the command indicates that an order had been successfully created, and should be similar to:</p>
+<ql-code-block language="json" output="">
+{"status":"success","order_id":"6pa5mmh"}
+</ql-code-block>
+</li>
+</ol>
+<h3>Store service</h3>
+<p>The <em>store service</em> (public endpoint) uses Pub/Sub to transmit information to the <em>order service</em> (private endpoint).</p>
+<ol>
+<li>
+<p>In the Google Cloud console <strong>Navigation menu</strong> (<img alt="navmenu" src="https://cdn.qwiklabs.com/tkgw1TDgj4Q%2BYKQUW4jUFd0O5OEKlUMBRYbhlCrF0WY%3D">), click <strong>Cloud Run</strong>.</p>
+</li>
+<li>
+<p>Click the link to the <em>store-service</em>.</p>
+</li>
+<li>
+<p>To view the service logs, click <strong>Logs</strong>. Check the store service logs to view the order ID that was generated.</p>
+</li>
+<li>
+<p>Add the log filter <code>ORDER ID</code> to see the ID generated by the <em>store service</em>.</p>
+<p><img alt="The logs tabbed page displaying the generated order ID" src="https://cdn.qwiklabs.com/ZVgTemO1fn3JZMnK2poZ2RwPXTZT7fyEi%2FcfVerrpTE%3D"></p>
+</li>
+</ol>
+<h3>Order service</h3>
+<p>The <em>order service</em> receives a message from the <em>store service</em> passed with Pub/Sub.</p>
+<ol>
+<li>
+<p>Check the order service logs to confirm that the JSON data was successfully transferred.</p>
+</li>
+<li>
+<p>Add the log filter <code>Order Placed</code> to see the generated order ID that was passed to the <em>order service</em>.</p>
+<p><img alt="The logs tabbed page displaying the generated order placed ID" src="https://cdn.qwiklabs.com/soHfhiD3Q%2B00QlH12%2BZKuC8dkqcpFYpIrG9EGj4usx4%3D"></p>
+</li>
+</ol>
+<p>Critter Junction have now updated their solution to take advantage of Pub/Sub.
+The following high level architecture diagram summaries the solution deployed.</p>
+<p><img alt="Architecture diagram" src="https://cdn.qwiklabs.com/Hcr1aEF3D4QfghnerR6TTSS0djo7UpGyzSsidGSp9vA%3D"></p>
+<p>You have successfully deployed Pub/Sub on Google Cloud to asynchronously communicate between Cloud Run services.</p>
+<h2 id="step11">Congratulations!</h2>
+<p>In this lab, you learned how to integrate Cloud Run services with Pub/Sub in your Google Cloud infrastructure.
+You learned how to:</p>
+<ul>
+<li>Deploy services to Cloud Run</li>
+<li>Create a Service Account with the appropriate role and permissions</li>
+<li>Define a Pub/Sub Topic</li>
+<li>Bind a Pub/Sub Subscription to a Service Account</li>
+</ul>
+<h3>Next steps / Learn more</h3>
+<p>Follow the <a href="https://www.youtube.com/watch?v=s2TIWIzCftM&amp;list=PLIivdWyY5sqJwq_pgOxcHzusWjXDVCEiX" target="_blank">Serverless Expeditions video series</a> to learn more about how to use these products within your project.</p>
+<ul>
+<li><a href="https://cloud.google.com/run" target="_blank">Cloud Run</a></li>
+<li><a href="https://cloud.google.com/tasks" target="_blank">Cloud Tasks</a></li>
+<li><a href="https://cloud.google.com/functions" target="_blank">Cloud Functions</a></li>
+</ul>
+<p><strong>Manual Last Updated May 9, 2023</strong></p>
+<p><strong>Lab Last Tested May 9, 2023</strong></p>
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+
+
+
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Setup and requirements</a></li><li><a href="#step3">Situational overview</a></li><li><a href="#step4">Task 1. Ensure that the Pub/Sub API is successfully enabled</a></li><li><a href="#step5">Task 2. Developing a minimal viable product (MVP)</a></li><li><a href="#step6">Pub/Sub overview</a></li><li><a href="#step7">Task 3. Deploying Pub/Sub</a></li><li><a href="#step8">Task 4. Creating a service account</a></li><li><a href="#step9">Task 5. Create a Pub/Sub subscription</a></li><li><a href="#step10">Task 6. Testing the application</a></li><li><a href="#step11">Congratulations!</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+In this lab you will learn how Cloud Pub/Sub can be used with Cloud Run.
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+45m access
+&middot;
+45m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>introductory</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/3813">https://googlecoursera.qwiklabs.com/catalog_lab/3813</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="new_lab_review" action="/lab_reviews" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='0' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='0' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="3813" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

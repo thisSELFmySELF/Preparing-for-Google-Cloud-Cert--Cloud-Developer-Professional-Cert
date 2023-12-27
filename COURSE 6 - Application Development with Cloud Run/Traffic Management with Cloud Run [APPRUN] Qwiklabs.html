@@ -1,0 +1,1058 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Traffic Management with Cloud Run [APPRUN] | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-484f429ecd41bc910509948cecaf71d98c510234.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-644b7af44e10b6334d7881042d33e7eac427c3b8.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-011e84c80a51010837f8d7868d0972aebf80b2b1.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="s6blF5od6wvK6RQAuq4y5K1VKjXqsIZvHmTbIqtMfcgLJKCbZLU3Stskvn8IrrYGPl8tUImVgj/NJ5MBlPlkrg==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;barker&quot;,&quot;community_forum&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;used_in&quot;,&quot;content_provider_admin&quot;,&quot;program_announcements&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;course_upgrade&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;program_learning_assignment&quot;,&quot;teams&quot;,&quot;peer_assignment&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;canonical_domain_redirect&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;search_updates&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='Cloud Run allows you to specify which revisions should receive traffic and to specify traffic percentages that are received by a revision.' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Traffic Management with Cloud Run [APPRUN] | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='Cloud Run allows you to specify which revisions should receive traffic and to specify traffic percentages that are received by a revision.' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32769074?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32769074?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-2bce1f34bff374bb8e1de389ce3467c39fc4868b.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="85ce96b379ec1ff3" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Traffic Management with Cloud Run [APPRUN]</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32769074?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32769074?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32769074?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32769074?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32769074?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32769074?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32769074?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32769074?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32769074?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32769074?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32769074?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32769074?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32769074?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32769074?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32769074?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32769074?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32769074?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32769074?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32769074?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Traffic Management with Cloud Run [APPRUN]&quot;,&quot;lab_name&quot;:&quot;Traffic Management with Cloud Run [APPRUN]&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32769074' data-lab-billing-limit='0.0' data-lab-duration='3600' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:3600}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Traffic Management with Cloud Run [APPRUN]
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>1 hour</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32769074/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.6944'></div>
+
+</a></div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">CBL406</h2>
+<p><img alt="Google Cloud Self-Paced Labs" src="https://cdn.qwiklabs.com/GMOHykaqmlTHiqEeQXTySaMXYPHeIvaqa2qHEzw6Occ%3D"></p>
+
+<p>In this lab, you learn to:</p>
+<ul>
+<li>Enable the Cloud Run API.</li>
+<li>Deploy a Cloud Run Service.</li>
+<li>Assign tags to a revision.</li>
+<li>Migrate traffic to a revision.</li>
+<li>Roll back a revision.</li>
+</ul>
+<h2 id="step2">Overview</h2>
+<p>Cloud Run allows you to specify which revisions should receive traffic and to specify traffic percentages that are received by a revision.
+This feature allows you to rollback to a previous revision, gradually roll out a revision, and split traffic between multiple revisions.</p>
+<p>In this lab you will learn how to use Cloud Run features.
+The lab features three high level sections that resolve a technical problem:</p>
+<ul>
+<li>Situational Overview</li>
+<li>Requirements Gathering</li>
+<li>Developing a minimal viable product</li>
+</ul>
+<h3>Prerequisites</h3>
+<p>These labs are based on intermediate knowledge of Google Cloud.
+While the steps required are covered in the content, it would be helpful to have familiarity with any of the following products:</p>
+<ul>
+<li>Cloud Build</li>
+<li>Cloud Run</li>
+</ul>
+<h2 id="step3">Setup</h2>
+<h4>Before you click the Start Lab button</h4>
+<ql-warningbox><strong>Note: Read these instructions.</strong>
+<p></p>
+Labs are timed and you cannot pause them. The timer, which starts when you click <b>Start Lab</b>, shows how long Google Cloud resources will be made available to you.</ql-warningbox>
+<p>This Qwiklabs hands-on lab lets you do the lab activities yourself in a real cloud environment, not in a simulation or demo environment. It does so by giving you new, temporary credentials that you use to sign in and access Google Cloud for the duration of the lab.</p>
+<h4>What you need</h4>
+<p>To complete this lab, you need:</p>
+<ul>
+<li>Access to a standard internet browser (Chrome browser recommended).</li>
+<li>Time to complete the lab.</li>
+</ul>
+<ql-warningbox><strong>Note: </strong>If you already have your own personal Google Cloud account or project, do not use it for this lab.</ql-warningbox>
+<ql-infobox><strong>Note: </strong>If you are using a Pixelbook, open an Incognito window to run this lab.</ql-infobox>
+
+<h4>How to start your lab and sign in to the Console</h4>
+<ol>
+<li>
+<p>Click the <strong>Start Lab</strong> button. If you need to pay for the lab, a pop-up opens for you to select your payment method.
+On the left is a panel populated with the temporary credentials that you must use for this lab.</p>
+<p><img alt="Credentials panel" src="https://cdn.qwiklabs.com/%2FtHp4GI5VSDyTtdqi3qDFtevuY014F88%2BFow%2FadnRgE%3D"></p>
+</li>
+<li>
+<p>Copy the username, and then click <strong>Open Google Console</strong>.
+The lab spins up resources, and then opens another tab that shows the <strong>Choose an account</strong> page.</p>
+<ql-infobox><strong>Note: </strong>Open the tabs in separate windows, side-by-side.</ql-infobox>
+</li>
+<li>
+<p>On the Choose an account page, click <strong>Use Another Account</strong>. The Sign in page opens.</p>
+<p><img alt="Choose an account dialog box with Use Another Account option highlighted " src="https://cdn.qwiklabs.com/eQ6xPnPn13GjiJP3RWlHWwiMjhooHxTNvzfg1AL2WPw%3D"></p>
+</li>
+<li>
+<p>Paste the username that you copied from the Connection Details panel. Then copy and paste the password.</p>
+</li>
+</ol>
+<ql-warningbox><strong>Note: </strong>You must use the credentials from the Connection Details panel. Do not use your Google Cloud Skills Boost credentials. If you have your own Google Cloud account, do not use it for this lab (avoids incurring charges).</ql-warningbox>
+<ol start="5">
+<li>Click through the subsequent pages:</li>
+</ol>
+<ul>
+<li>Accept the terms and conditions.</li>
+<li>Do not add recovery options or two-factor authentication (because this is a temporary account).</li>
+<li>Do not sign up for free trials.</li>
+</ul>
+<p>After a few moments, the Cloud console opens in this tab.</p>
+<ql-infobox><strong>Note: </strong>You can view the menu with a list of Google Cloud Products and Services by clicking the <b>Navigation menu</b> at the top-left.
+<img alt="Cloud Console Menu" src="https://cdn.qwiklabs.com/9vT7xPlxoNP%2FPsK0J8j0ZPFB4HnnpaIJVCDByaBrSHg%3D">
+</ql-infobox>
+
+<h3>Activate Google Cloud Shell</h3>
+<p>Google Cloud Shell is a virtual machine that is loaded with development tools. It offers a persistent 5GB home directory and runs on the Google Cloud.</p>
+<p>Google Cloud Shell provides command-line access to your Google Cloud resources.</p>
+<ol>
+<li>
+<p>In Cloud console, on the top right toolbar, click the Open Cloud Shell button.</p>
+<p><img alt="Highlighted Cloud Shell icon" src="https://cdn.qwiklabs.com/00tA48qOVOyHrSa1DA7LwccfwQ9Z%2BE6dkvQ1MYPHzhQ%3D"></p>
+</li>
+<li>
+<p>Click <strong>Continue</strong>.</p>
+</li>
+</ol>
+<p>It takes a few moments to provision and connect to the environment. When you are connected, you are already authenticated, and the project is set to your <em>PROJECT_ID</em>. For example:</p>
+<p><img alt="Project ID highlighted in the Cloud Shell Terminal" src="https://cdn.qwiklabs.com/hmMK0W41Txk%2B20bQyuDP9g60vCdBajIS%2B52iI2f4bYk%3D"></p>
+<p><strong>gcloud</strong> is the command-line tool for Google Cloud. It comes pre-installed on Cloud Shell and supports tab-completion.</p>
+<ul>
+<li>You can list the active account name with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud auth list
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - @.com (active)
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - google1623327_student@qwiklabs.net
+ </ql-code-block>
+<ul>
+<li>You can list the project ID with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud config list project
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+[core]
+project = 
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+[core]
+project = qwiklabs-gcp-44776a13dea667a6
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>
+  Full documentation of <strong>gcloud</strong> is available in the
+  <a href="https://cloud.google.com/sdk/gcloud" target="_blank">
+    gcloud CLI overview guide
+  </a>.
+</ql-infobox>
+
+<h2 id="step4">Situational overview</h2>
+<p><img alt="Critter Junction logo" src="https://cdn.qwiklabs.com/Zpj%2B%2FbgFdnXXouSTEeCdBcBKdYU1XbAfvIzHTkWCvFE%3D"></p>
+<p>In this lab, you will help the development team at Critter Junction investigate Cloud Run revisions.
+The team would like to explore how revision management can be incorporated into their existing development workflow.</p>
+<h2 id="step5">Requirements gathering</h2>
+<p>The operations team at Critter Junction would like to create a status page for their services without introducing additional complexity to their existing systems.
+Experimentation with Serverless products has led them to select Cloud Run due to the wealth of features supported.</p>
+<h3>Defining the service priorities</h3>
+<p>The operations team at Critter Junction are keen to define a solution that can be implemented quickly.
+After discussions with the engineering team, they discovered that serverless may be a good option.
+To move forward, a series of meetings are held with stakeholders to ascertain the key priorities.
+The results of which are shown below:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Ref</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>User Story</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As a product  lead, I want to ensure the website remains responsive, so customers face minimal wait times.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As a developer lead, I want to increase the velocity of service deployments. </p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As an ops lead, I want to ensure system stability is observed, so the system performance is not degraded through the deployment of new revisions.</p>
+</td>
+</tr>
+</table>
+<p>The team leads follow up the meetings and agree the following high level tasks would indicate the project requirements have been met:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Ref</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Definition of Done</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>User base are not impacted by the rollout of new features</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Revision management enabled for service deployments</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>New revision retains existing level of operational stability by deployment to a reduced user base</p>
+</td>
+</tr>
+</table>
+<p>In consideration of the requirements, the development team decide to look in to the following:</p>
+<ul>
+<li>Traffic Migration</li>
+<li>Revision Tags</li>
+</ul>
+<h4>Traffic migration versus revision tags</h4>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Feature</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p><em>Revision Tags</em></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><em>"Appropriate for use cases where a task producer needs to defer or control the execution timing of a specific webhook or remote procedure call." </em></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><img alt="check mark" src="https://cdn.qwiklabs.com/%2Fcdnq2W0DWPihX1wPCluHHVpKycEXsk%2B0xYWPSKGX2k%3D" style="max-width:35.00px;"></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Traffic Migration</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>"Cloud Run allows you to specify which revisions should receive traffic and to specify traffic percentages that are received by a revision.."</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><img alt="check mark" src="https://cdn.qwiklabs.com/%2Fcdnq2W0DWPihX1wPCluHHVpKycEXsk%2B0xYWPSKGX2k%3D" style="max-width:35.00px;"></p>
+</td>
+</tr>
+</table>
+<p>The following high level architecture diagram summaries the minimal viable product they wish to investigate.</p>
+<h3>MVP architecture</h3>
+<p><img alt="Traffic Management flow from Developers to Product Status Page" src="https://cdn.qwiklabs.com/reBMQI87Q5EwfP7xH0sWx6pkuNM6hrz9frlku7QZcpg%3D"></p>
+<p>In the proposed solution, the product service is used to demonstrate how traffic migration and revision tagging can be used with Cloud Run.</p>
+<h2 id="step6">Developing a minimal viable product (MVP)</h2>
+<p>Critter Junction has a backend product status service that they would like integrated with Cloud Run.
+To build an MVP the following activities are required:</p>
+<ul>
+<li>Configure the environment</li>
+<li>Test Revision Tags</li>
+<li>Test Traffic Migration</li>
+<li>Deploy a public service</li>
+</ul>
+<h2 id="step7">Task 1. Configure the environment</h2>
+<p>Cloud Run requires some environmental settings.
+In this section, enable the API and deploy the service.</p>
+<h3>Enable the Cloud Run API</h3>
+<p>Before deploying the application, config the environment.</p>
+<ol>
+<li>Enable Cloud Run API:</li>
+</ol>
+<ql-code-block language="plaintext">
+gcloud services enable run.googleapis.com
+</ql-code-block>
+<ol start="2">
+<li>Set the compute region:</li>
+</ol>
+<ql-code-block language="plaintext">
+gcloud config set compute/region us-central1
+</ql-code-block>
+<ol start="3">
+<li>Create a LOCATION environment variable:</li>
+</ol>
+<ql-code-block language="bash">
+LOCATION="us-central1"
+</ql-code-block>
+<p>Cloud Run requires knowledge of the region in which it will be deployed.
+In addition the Cloud Run service should be enabled to allow API access.</p>
+<h3>Deploy a service</h3>
+<p>The development team needs to configure the product status service.
+To test the process, the development team decided to look at the deployment patterns for Cloud Run.</p>
+<p>An example series of container images has been created by the development team.
+Use these images to configure and deploy within the project:</p>
+<ol>
+<li>Deploy the payment service:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run deploy product-service \
+   --image gcr.io/qwiklabs-resources/product-status:0.0.1 \
+   --tag test1 \
+   --region $LOCATION \
+   --allow-unauthenticated
+</ql-code-block>
+<ol start="2">
+<li>Add the product status service to an environment variable:</li>
+</ol>
+<ql-code-block language="plaintext">
+TEST1_PRODUCT_SERVICE_URL=$(gcloud run services describe product-service --platform managed --region us-central1 --format="value(status.address.url)")
+</ql-code-block>
+<ol start="3">
+<li>Test the API is online:</li>
+</ol>
+<ql-code-block language="plaintext">
+curl $TEST1_PRODUCT_SERVICE_URL/help -w "\n"
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+.
+API Microservice example: v1
+.
+</ql-code-block>
+<ol start="4">
+<li>Test the product status is responding:</li>
+</ol>
+<ql-code-block language="plaintext">
+curl $TEST1_PRODUCT_SERVICE_URL/v1/revision -w "\n"
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+.
+{"api":"version 1"}
+.
+</ql-code-block>
+<ql-infobox><p><strong>Note: Traffic management </strong></p>
+<ul>
+<li>100 percent of traffic is being served to the revision <strong>TEST1</strong>
+</li>
+<li>Service is accessible and set to the default</li>
+</ul>
+</ql-infobox>
+<p>The Cloud Run service has been successfully deployed and is responding to requests.
+In the next section explore how to utilise Traffic Migration to specify which revision receives traffic.</p>
+<h2 id="step8">Task 2. Revision tags</h2>
+<p>Each new Cloud Run revision can be assigned a tag.
+Doing this allows access to a URL without serving traffic.
+An approach like this can be useful to handle the traffic profile across multiple revisions.</p>
+<p>The main uses cases for revision tags are shown in the following table:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Use Case</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Integration testing</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Run containers revisions during the development phase</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Tagged revision migration</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Migrate traffic to a tagged revision</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Tagged revision rollback</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Rollback to prior version based on tagged revision</p>
+</td>
+</tr>
+</table>
+<p>In this section deploy a new revision and learn how to control the traffic to direct to the correct destination.</p>
+<h3>Revised architecture</h3>
+<p><img alt="Traffic Management flow from Developers to Product Status Page" src="https://cdn.qwiklabs.com/ME5Ymj%2FXmqRGoBFz2N0elcCahlcYYq45iYiHjmN5svo%3D"></p>
+<h3>Integration testing</h3>
+<p>Cloud Run provides the ability to deploy a new revision with redirecting traffic.
+A deployment of this kind is useful for integration testing of components.</p>
+<ol>
+<li>Deploy a new tagged revision (<code>test2</code>) with redirection of traffic:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run deploy product-service \
+  --image gcr.io/qwiklabs-resources/product-status:0.0.2 \
+  --no-traffic \
+  --tag test2 \
+  --region=$LOCATION \
+  --allow-unauthenticated
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Observe the name of the <code>Tagged Revision</code> in the command output.</p>
+</li>
+<li>
+<p>Create an environment variable for the new URL:</p>
+</li>
+</ol>
+<ql-code-block language="plaintext">
+TEST2_PRODUCT_STATUS_URL=$(gcloud run services describe product-service --platform managed --region=us-central1 --format="value(status.traffic[1].url)")
+</ql-code-block>
+<ol start="4">
+<li>Test the tag revision is able to receive traffic:</li>
+</ol>
+<ql-code-block language="plaintext">
+curl $TEST2_PRODUCT_STATUS_URL/help -w "\n"
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+.
+API Microservice example: v2
+.
+</ql-code-block>
+<p>The new revision can be used to independently test the deployment.
+At this point the original revision is still serving 100% of the traffic.</p>
+<h3>Revision migration</h3>
+<p>There are now two versions available.
+However only one revision is serving traffic.
+Alter the deployed revisions to share the traffic profile.</p>
+<ol>
+<li>Migrate 50% of the traffic to the revision tag <code>test2</code>:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run services update-traffic product-service \
+  --to-tags test2=50 \
+  --region=$LOCATION
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Observe the name of the <code>Tagged Revision</code> in the command output.</p>
+</li>
+<li>
+<p>Confirm the original <code>test</code> endpoint is distributing traffic:</p>
+</li>
+</ol>
+<ql-code-block language="plaintext">
+for i in {1..10}; do curl $TEST1_PRODUCT_SERVICE_URL/help -w "\n"; done
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+API Microservice example: v1
+.
+.
+.
+API Microservice example: v2
+</ql-code-block>
+<p>At this point observe the traffic pattern is distributed between the original (TEST1) and new revision (TEST2).</p>
+<h3>Tagged revision rollback</h3>
+<p>In the event an issue is found, the traffic migration can be rolled back by resetting the percentage.</p>
+<ol>
+<li>Migrate the distributed traffic back to the <code>test1</code> service:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run services update-traffic product-service \
+  --to-tags test2=0 \
+  --region=$LOCATION
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Observe the name of the <code>Tagged Revision</code> in the command output.</p>
+</li>
+<li>
+<p>Test the endpoint is distributing traffic to <code>TEST1</code> <strong>only</strong>:</p>
+</li>
+</ol>
+<ql-code-block language="plaintext">
+for i in {1..10}; do curl $TEST1_PRODUCT_SERVICE_URL/help -w "\n"; done
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+.
+API Microservice example: v1
+.
+</ql-code-block>
+<p>In this section a second Cloud Run revision was deployed and used to migrate traffic.
+The second revision was labelled with the tag <code>test2</code> and used to migrate a percentage of the traffic determined at deployment.</p>
+<h2 id="step9">Task 3. Traffic migration</h2>
+<p>Migration of traffic provides a simple mechanism on which to direct communication to a deployed service.
+Cloud Run provides the ability to have multiple revisions to be deployed without a cost penalty.
+Remember Cloud Run only charges where traffic is handled by the service.</p>
+<p>The main uses cases for traffic migration are shown in the following table:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Use Case</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Traffic migration</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Enable traffic to be sent to the latest version of the deployed service</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Traffic splitting</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Perform a ratio traffic split between defined deployed services</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Rollout migration</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Deploy a service and gradually enable traffic at a predetermined time</p>
+</td>
+</tr>
+</table>
+<h3>Revised architecture</h3>
+<p><img alt="Traffic Management flow from Developers to Product Status Page" src="https://cdn.qwiklabs.com/UqCa91UycCFpuKJjifGIJwhX33qWX7yrTlyFHmJII9c%3D"></p>
+<p>In this section multiple revisions will be deployed.
+Learn how to split traffic to a specific host.</p>
+<h3>Traffic migration - deploy a new version</h3>
+<p>When splitting traffic between two or more revisions, a comma separated list can be used.
+The list represents the revisions deployed.</p>
+<ol>
+<li>Deploy a new tagged revision (<code>test3</code>) with redirection of traffic:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run deploy product-service \
+  --image gcr.io/qwiklabs-resources/product-status:0.0.3 \
+  --no-traffic \
+  --tag test3 \
+  --region=$LOCATION \
+  --allow-unauthenticated
+</ql-code-block>
+<ol start="2">
+<li>Deploy a new tagged revision (<code>test4</code>) with redirection of traffic:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run deploy product-service \
+  --image gcr.io/qwiklabs-resources/product-status:0.0.4 \
+  --no-traffic \
+  --tag test4 \
+  --region=$LOCATION \
+  --allow-unauthenticated
+</ql-code-block>
+<ol start="3">
+<li>Output a list of the revisions deployed:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run services describe product-service \
+  --region=$LOCATION \
+  --format='value(status.traffic.revisionName)'
+</ql-code-block>
+<ol start="4">
+<li>Create an environment variable for the available <code>revisionNames</code>:</li>
+</ol>
+<ql-code-block language="bash">
+LIST=$(gcloud run services describe product-service --platform=managed --region=$LOCATION --format='value[delimiter="=25,"](status.traffic.revisionName)')"=25"
+</ql-code-block>
+<ol start="5">
+<li>Split traffic between the four services using the <code>LIST</code> environment variable:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run services update-traffic product-service \
+  --to-revisions $LIST --region=$LOCATION
+</ql-code-block>
+<ol start="6">
+<li>
+<p>Observe the name of the <code>Tagged Revision</code> in the command output.</p>
+</li>
+<li>
+<p>Test the endpoint is distributing traffic:</p>
+</li>
+</ol>
+<ql-code-block language="plaintext">
+for i in {1..10}; do curl $TEST1_PRODUCT_SERVICE_URL/help -w "\n"; done
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+API Microservice example: v4
+API Microservice example: v1
+API Microservice example: v2
+API Microservice example: v4
+API Microservice example: v3
+API Microservice example: v1
+API Microservice example: v2
+API Microservice example: v2
+API Microservice example: v4
+API Microservice example: v3
+</ql-code-block>
+<p>In this section a Cloud Run deployment was performed.
+Traffic was then diverted to the new deployment.</p>
+<h3>Traffic splitting - update traffic between revisions</h3>
+<ol>
+<li>Reset the service traffic profile to use the latest deployment:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud run services update-traffic product-service --to-latest --platform=managed --region=$LOCATION
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Observe the name of the <code>Tagged Revision</code> in the command output.</p>
+</li>
+<li>
+<p>Create an environment variable for the new URL:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+LATEST_PRODUCT_STATUS_URL=$(gcloud run services describe product-service --platform managed --region=$LOCATION --format="value(status.address.url)")
+</ql-code-block>
+<ol start="4">
+<li>Test the tag revision is able to receive traffic:</li>
+</ol>
+<ql-code-block language="plaintext">
+curl $LATEST_PRODUCT_STATUS_URL/help -w "\n"
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+.
+API Microservice example: v4
+.
+</ql-code-block>
+<p>Critter Junction have now updated their solution to take advantage of Cloud Run traffic management.</p>
+<h2 id="step10">Congratulations!</h2>
+<p>Over this course of this lab, you have seen how to incorporate Cloud Run traffic management within your Google Cloud infrastructure.</p>
+<ul>
+<li>Deploy a Cloud Run service</li>
+<li>Learn Revision Tagging</li>
+<li>Understand Traffic Migration</li>
+</ul>
+<h3>Next steps / Learn more</h3>
+<p>Follow the  <a href="https://www.youtube.com/watch?v=s2TIWIzCftM&amp;list=PLIivdWyY5sqJwq_pgOxcHzusWjXDVCEiX" target="_blank">Serverless Expeditions video series</a> to learn more about how to utilise these products within your project.</p>
+<ul>
+<li>Cloud Run</li>
+<li>Cloud Build</li>
+<li>Cloud Functions</li>
+</ul>
+<p><strong>Manual Last Updated: November 22, 2023</strong></p>
+<p><strong>Lab Last Tested: November 22, 2023</strong></p>
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+
+
+
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">CBL406</a></li><li><a href="#step2">Overview</a></li><li><a href="#step3">Setup</a></li><li><a href="#step4">Situational overview</a></li><li><a href="#step5">Requirements gathering</a></li><li><a href="#step6">Developing a minimal viable product (MVP)</a></li><li><a href="#step7">Task 1. Configure the environment</a></li><li><a href="#step8">Task 2. Revision tags</a></li><li><a href="#step9">Task 3. Traffic migration</a></li><li><a href="#step10">Congratulations!</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+Cloud Run allows you to specify which revisions should receive traffic and to specify traffic percentages that are received by a revision.
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+60m access
+&middot;
+60m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>introductory</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/3814">https://googlecoursera.qwiklabs.com/catalog_lab/3814</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="new_lab_review" action="/lab_reviews" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='0' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='0' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="3814" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

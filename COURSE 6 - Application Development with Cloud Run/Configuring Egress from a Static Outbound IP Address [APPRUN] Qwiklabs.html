@@ -1,0 +1,887 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Configuring Egress from a Static Outbound IP Address [APPRUN] | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-484f429ecd41bc910509948cecaf71d98c510234.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-644b7af44e10b6334d7881042d33e7eac427c3b8.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-011e84c80a51010837f8d7868d0972aebf80b2b1.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="vGGgzE8E+4bwODtMjI5oFgzCymqvZmOHcs4u0ArNBkPqBR30MdRrWJPg8iXRvX5GptgsX6FJf7GTBCppnJ76WQ==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;barker&quot;,&quot;community_forum&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;used_in&quot;,&quot;content_provider_admin&quot;,&quot;program_announcements&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;course_upgrade&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;program_learning_assignment&quot;,&quot;teams&quot;,&quot;peer_assignment&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;canonical_domain_redirect&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;search_updates&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='This lab teaches the process of configuring a Cloud Run service to send requests using a static IP address.' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Configuring Egress from a Static Outbound IP Address [APPRUN] | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='This lab teaches the process of configuring a Cloud Run service to send requests using a static IP address.' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32770850?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32770850?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-2bce1f34bff374bb8e1de389ce3467c39fc4868b.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="13cd881218367891" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Configuring Egress from a Static Outbound IP Address [APPRUN]</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32770850?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32770850?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32770850?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32770850?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32770850?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32770850?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32770850?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32770850?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32770850?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32770850?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32770850?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32770850?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32770850?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32770850?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32770850?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32770850?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32770850?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32770850?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32770850?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Configuring Egress from a Static Outbound IP Address [APPRUN]&quot;,&quot;lab_name&quot;:&quot;Configuring Egress from a Static Outbound IP Address [APPRUN]&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32770850' data-lab-billing-limit='0.0' data-lab-duration='3600' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:3600}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Configuring Egress from a Static Outbound IP Address [APPRUN]
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>1 hour</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32770850/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.2952'></div>
+
+</a></div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<p><img alt="Google Cloud Self-Paced Labs" src="https://cdn.qwiklabs.com/GMOHykaqmlTHiqEeQXTySaMXYPHeIvaqa2qHEzw6Occ%3D"></p>
+<h2 id="step1">Overview</h2>
+<p>By default, a Cloud Run service will connect to external endpoints on the internet using a dynamic IP address pool. This method is not suitable if the Cloud Run service needs to connect to an external endpoint that requires connections originating from a static IP address, for example, as a database or API using an IP address-based firewall. For those types of connections, you must configure your Cloud Run service to route requests through a static IP address.</p>
+<p>This lab teaches the process of configuring a Cloud Run service to send requests using a static IP address.</p>
+<h3>Prerequisites</h3>
+<p>These labs are based on intermediate knowledge of Google Cloud. While the steps required are covered in the content, it would be helpful to have familiarity with any of the following products:</p>
+<ul>
+<li>
+<p>Static IP Addresses</p>
+</li>
+<li>
+<p>Cloud Run</p>
+</li>
+</ul>
+<h3>Objectives</h3>
+<p>In this lab, you learn to:</p>
+<ul>
+<li>
+<p>Build and publish a sample Cloud Run service and image using code from the Buildpack samples repository.</p>
+</li>
+<li>
+<p>Create a subnetwork and a VPC access connector.</p>
+</li>
+<li>
+<p>Configure network address translation (NAT).</p>
+</li>
+<li>
+<p>Route your Cloud Run traffic through the VPC network.</p>
+</li>
+</ul>
+<h2 id="step2">Setup and requirements</h2>
+<h4>Before you click the Start Lab button</h4>
+<ql-warningbox><strong>Note: Read these instructions.</strong>
+<p></p>
+Labs are timed and you cannot pause them. The timer, which starts when you click <b>Start Lab</b>, shows how long Google Cloud resources will be made available to you.</ql-warningbox>
+<p>This Qwiklabs hands-on lab lets you do the lab activities yourself in a real cloud environment, not in a simulation or demo environment. It does so by giving you new, temporary credentials that you use to sign in and access Google Cloud for the duration of the lab.</p>
+<h4>What you need</h4>
+<p>To complete this lab, you need:</p>
+<ul>
+<li>Access to a standard internet browser (Chrome browser recommended).</li>
+<li>Time to complete the lab.</li>
+</ul>
+<ql-warningbox><strong>Note: </strong>If you already have your own personal Google Cloud account or project, do not use it for this lab.</ql-warningbox>
+<ql-infobox><strong>Note: </strong>If you are using a Pixelbook, open an Incognito window to run this lab.</ql-infobox>
+<h4>How to start your lab and sign in to the Console</h4>
+<ol>
+<li>
+<p>Click the <strong>Start Lab</strong> button. If you need to pay for the lab, a pop-up opens for you to select your payment method.
+On the left is a panel populated with the temporary credentials that you must use for this lab.</p>
+<p><img alt="Credentials panel" src="https://cdn.qwiklabs.com/%2FtHp4GI5VSDyTtdqi3qDFtevuY014F88%2BFow%2FadnRgE%3D"></p>
+</li>
+<li>
+<p>Copy the username, and then click <strong>Open Google Console</strong>.
+The lab spins up resources, and then opens another tab that shows the <strong>Choose an account</strong> page.</p>
+<ql-infobox><strong>Note: </strong>Open the tabs in separate windows, side-by-side.</ql-infobox>
+</li>
+<li>
+<p>On the Choose an account page, click <strong>Use Another Account</strong>. The Sign in page opens.</p>
+<p><img alt="Choose an account dialog box with Use Another Account option highlighted " src="https://cdn.qwiklabs.com/eQ6xPnPn13GjiJP3RWlHWwiMjhooHxTNvzfg1AL2WPw%3D"></p>
+</li>
+<li>
+<p>Paste the username that you copied from the Connection Details panel. Then copy and paste the password.</p>
+</li>
+</ol>
+<ql-warningbox><strong>Note: </strong>You must use the credentials from the Connection Details panel. Do not use your Google Cloud Skills Boost credentials. If you have your own Google Cloud account, do not use it for this lab (avoids incurring charges).</ql-warningbox>
+<ol start="5">
+<li>Click through the subsequent pages:</li>
+</ol>
+<ul>
+<li>Accept the terms and conditions.</li>
+<li>Do not add recovery options or two-factor authentication (because this is a temporary account).</li>
+<li>Do not sign up for free trials.</li>
+</ul>
+<p>After a few moments, the Cloud console opens in this tab.</p>
+<ql-infobox><strong>Note: </strong>You can view the menu with a list of Google Cloud Products and Services by clicking the <b>Navigation menu</b> at the top-left.
+<img alt="Cloud Console Menu" src="https://cdn.qwiklabs.com/9vT7xPlxoNP%2FPsK0J8j0ZPFB4HnnpaIJVCDByaBrSHg%3D">
+</ql-infobox>
+<h3>Activate Google Cloud Shell</h3>
+<p>Google Cloud Shell is a virtual machine that is loaded with development tools. It offers a persistent 5GB home directory and runs on the Google Cloud.</p>
+<p>Google Cloud Shell provides command-line access to your Google Cloud resources.</p>
+<ol>
+<li>
+<p>In Cloud console, on the top right toolbar, click the Open Cloud Shell button.</p>
+<p><img alt="Highlighted Cloud Shell icon" src="https://cdn.qwiklabs.com/00tA48qOVOyHrSa1DA7LwccfwQ9Z%2BE6dkvQ1MYPHzhQ%3D"></p>
+</li>
+<li>
+<p>Click <strong>Continue</strong>.</p>
+</li>
+</ol>
+<p>It takes a few moments to provision and connect to the environment. When you are connected, you are already authenticated, and the project is set to your <em>PROJECT_ID</em>. For example:</p>
+<p><img alt="Project ID highlighted in the Cloud Shell Terminal" src="https://cdn.qwiklabs.com/hmMK0W41Txk%2B20bQyuDP9g60vCdBajIS%2B52iI2f4bYk%3D"></p>
+<p><strong>gcloud</strong> is the command-line tool for Google Cloud. It comes pre-installed on Cloud Shell and supports tab-completion.</p>
+<ul>
+<li>You can list the active account name with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud auth list
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - @.com (active)
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - google1623327_student@qwiklabs.net
+ </ql-code-block>
+<ul>
+<li>You can list the project ID with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud config list project
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+[core]
+project = 
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+[core]
+project = qwiklabs-gcp-44776a13dea667a6
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>
+  Full documentation of <strong>gcloud</strong> is available in the
+  <a href="https://cloud.google.com/sdk/gcloud" target="_blank">
+    gcloud CLI overview guide
+  </a>.
+</ql-infobox>
+<h2 id="step3">Task 1. Enable the Cloud Run API and configure your Shell environment for flexibiilty</h2>
+<ol>
+<li>
+<p>From Cloud Shell, enable the Cloud Run API :</p>
+<ql-code-block language="plaintext">
+ gcloud services enable run.googleapis.com
+</ql-code-block>
+<p>If you are asked to authorize the use of your credentials, do so.  You should then see a successful message similar to this one:</p>
+<ql-code-block output="">
+  Operation "operations/acf.cc11852d-40af-47ad-9d59-477a12847c9e" finished successfully.
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>You can also enable the API using the <strong>APIs &amp; Services </strong>section of the console.</ql-infobox>
+</li>
+<li>
+<p>Create a LOCATION environment variable:</p>
+<ql-code-block templated="">
+ LOCATION={{{project_0.default_region|us-central1}}}
+</ql-code-block>
+</li>
+<li>
+<p>Set the compute region:</p>
+<ql-code-block language="bash">
+ gcloud config set compute/region $LOCATION
+</ql-code-block>
+</li>
+</ol>
+<h2 id="step4">Task 2.  Create a service</h2>
+<h3>Clone the buildpack-samples repository</h3>
+<ul>
+<li>
+<p>Clone the buildpacks samples repository to your local directory using the command below:</p>
+<ql-code-block language="plaintext">
+git clone https://github.com/GoogleCloudPlatform/buildpack-samples.git
+</ql-code-block>
+</li>
+</ul>
+<h3>Copy a sample application</h3>
+<ul>
+<li>
+<p>Copy an existing application that you will use later to create a second service.</p>
+<ql-code-block language="plaintext">
+cp -R buildpack-samples/sample-go buildpack-samples/sample-go-service
+</ql-code-block>
+</li>
+</ul>
+<h3>Edit the sample application</h3>
+<ol>
+<li>
+<p>Change to the sample code folder:</p>
+<ql-code-block language="plaintext">
+cd buildpack-samples/sample-go
+</ql-code-block>
+</li>
+<li>
+<p>Using any editor, edit the file <code>hello.go</code> in the <code>sample-go</code> folder, and add the <code>/service</code> http handler to the <code>main</code> function:</p>
+<ql-code-block language="go">
+http.HandleFunc("/service", func(w http.ResponseWriter, r *http.Request) {
+     serviceURL := os.Getenv("SERVICE_B_URL")
+     if serviceURL == "" {
+         log.Fatalln("Service URL environment variable is not set.")
+     }
+     resp, err := http.Get(serviceURL)
+     if err != nil {
+         log.Fatalln(err)
+     }
+     defer resp.Body.Close()
+     body, err := ioutil.ReadAll(resp.Body)
+     if err != nil {
+         log.Fatalln(err)
+     }
+     log.Println(string(body))
+   fmt.Fprint(w, string(body))
+ })
+</ql-code-block>
+<ql-infobox>The function uses a URL from an environment variable to invoke another internal Cloud Run service.</ql-infobox>
+</li>
+<li>
+<p>Update the <code>import</code> statement to add the <code>io/ioutil</code> package:</p>
+<ql-code-block language="go">
+import (
+ "fmt"
+ "log"
+ "net/http"
+ "os"
+ "io/ioutil"
+)
+</ql-code-block>
+</li>
+<li>
+<p>Build an application container for your sample application with the <code>pack</code> command.
+If asked to provide authorization for the Shell, give it permission to run.</p>
+<ql-code-block language="plaintext">
+pack build --builder=gcr.io/buildpacks/builder sample-go
+</ql-code-block>
+</li>
+</ol>
+<h3>Run your new container in Docker</h3>
+<ol>
+<li>
+<p>Run the command below to bind the sample app created in the previous step to port 8080, so that it can be accessed via the browser:</p>
+<ql-code-block language="plaintext">
+docker run -it -e PORT=8080 -p 8080:8080 sample-go
+</ql-code-block>
+</li>
+<li>
+<p>In the Cloud Shell window, click on the <strong>Web Preview</strong> icon and select <strong>Preview on port 8080</strong>.</p>
+<p>A new browser window or tab will open showing the "hello, world" message. Success!</p>
+</li>
+<li>
+<p>Back in the console window, click <code>Control C</code> (Control and C key held down at the same time) to stop the web service and return control of the command line to the Cloud Shell.</p>
+</li>
+</ol>
+<h3>Publish the image</h3>
+<ol>
+<li>
+<p>First, set the default Buildpacks builder:</p>
+<ql-code-block language="plaintext">
+pack config default-builder gcr.io/buildpacks/builder:v1
+</ql-code-block>
+</li>
+<li>
+<p>Publish your container image:</p>
+<ql-code-block language="plaintext">
+ pack build --publish gcr.io/$GOOGLE_CLOUD_PROJECT/sample-go
+</ql-code-block>
+</li>
+</ol>
+<p>You are now ready for the next part of the lab.</p>
+<h2 id="step5">Task 3. Create a subnetwork</h2>
+<p>Creating a subnetwork for your Serverless VPC Access connector to reside in ensures that other compute resources in your VPC, such as Compute Engine VMs or Google Kubernetes Engine clusters, do not accidentally use the static IP you have configured to access the internet.</p>
+<ol>
+<li>
+<p>First, you will need to find the name of your VPC network by calling up a list of the networks associate with your account, using Cloud shell:</p>
+<ql-code-block language="plaintext">
+gcloud compute networks list
+</ql-code-block>
+<p>You should see something like the following in the output, identifying the networks you can use when attaching your Serverless VPC Access connector.  For this lab, the only network that will be available is the <code>default</code> network, so the information returned will be similar to the output shown below:</p>
+<ql-code-block language="text" output="">
+NAME: default
+SUBNET_MODE: AUTO
+BGP_ROUTING_MODE: REGIONAL
+IPV4_RANGE: 
+GATEWAY_IPV4:
+</ql-code-block>
+</li>
+<li>
+<p>Create a subnetwork called <code>mysubnet</code> with a range of <code>192.168.0.0/28</code> specified in CIDR format, to be used for your Serverless VPC Access connector.</p>
+<p>To create this subnetwork in the project's <code>default</code> network (note also that ), run the command:</p>
+<ql-code-block language="bash">
+ gcloud compute networks subnets create mysubnet \
+  --range=192.168.0.0/28 --network=default --region=$LOCATION
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>To avoid errors later in the process, use a netmask of 28 for subnets that are used for VPC connectors.</ql-infobox>
+</li>
+</ol>
+<h2 id="step6">Task 4. Create a serverless VPC Access connector</h2>
+<p>To route your Cloud Run service's outbound traffic to a VPC network, you first need to set up a Serverless VPC Access connector.</p>
+<ol>
+<li>
+<p>Create a Serverless VPC Access connector named <code>myconnector</code> with your previously created subnetwork named <code>mysubnet</code> using the command:</p>
+<ql-code-block language="bash">
+ gcloud compute networks vpc-access connectors create myconnector \
+  --region=$LOCATION \
+  --subnet-project=$GOOGLE_CLOUD_PROJECT \
+  --subnet=mysubnet
+</ql-code-block>
+</li>
+<li>
+<p>If prompted to enable the <code>vpcaccess.googleapis.com</code> on your project, type <strong>y</strong>.</p>
+<p>Wait for the process to complete before proceeding.</p>
+</li>
+</ol>
+<h2 id="step7">Task 5. Configure network address translation (NAT)</h2>
+<p>To route outbound requests to external endpoints through a static IP (which is the main goal of this lab), you must first configure a Cloud NAT gateway.</p>
+<ol>
+<li>
+<p>Create a new Cloud Router to program your NAT gateway:</p>
+<ql-code-block language="bash">
+ gcloud compute routers create myrouter \
+  --network=default \
+  --region=$LOCATION
+</ql-code-block>
+</li>
+<li>
+<p>Next, reserve a static IP address using the command below, where <code>myoriginip</code> is the name being assigned to your IP address resource.</p>
+<p>A reserved IP address resource retains the underlying IP address when the resource it is associated with is deleted and re-created.  Using the same region as your Cloud NAT router will help to minimize latency and network costs.</p>
+<ql-code-block language="bash">
+ gcloud compute addresses create myoriginip --region=$LOCATION
+</ql-code-block>
+<p>To route outbound requests to external endpoints through a static IP, you must configure a Cloud NAT gateway.</p>
+</li>
+<li>
+<p>Bring all of the resources you've just created together to create a Cloud NAT gateway named <code>mynat</code>.</p>
+<p>To configure your router to route the traffic originating from the VPC network, run the command:</p>
+<ql-code-block language="bash">
+ gcloud compute routers nats create mynat \
+  --router=myrouter \
+  --region=$LOCATION \
+  --nat-custom-subnet-ip-ranges=mysubnet \
+  --nat-external-ip-pool=myoriginip
+</ql-code-block>
+</li>
+</ol>
+<h2 id="step8">Task 6. Route Cloud Run traffic through the VPC network</h2>
+<ol>
+<li>
+<p>After NAT has been configured, deploy your Cloud Run service with the Serverless VPC Access connector, and set VPC egress to route all traffic through the VPC network:</p>
+<ql-code-block language="bash">
+ gcloud run deploy sample-go \
+  --image=gcr.io/$GOOGLE_CLOUD_PROJECT/sample-go \
+  --vpc-connector=myconnector \
+  --vpc-egress=all-traffic \
+  --region $LOCATION \
+  --allow-unauthenticated
+</ql-code-block>
+</li>
+<li>
+<p>If prompted to enable <code>run.googleapis.com</code> for your project, type <strong>y</strong>.</p>
+<p>If successful, after a few minutes you should see output similar to that below:</p>
+<ql-code-block language="text" output="">Deploying container to Cloud Run service [sample-go] in project [qwiklabs-gcp-01-825e0adf46fc] region [us-central1]
+✓ Deploying new service... Done.                                       
+✓ Creating Revision...
+✓ Routing traffic...
+✓ Setting IAM Policy...
+Done.
+Service [sample-go] revision [sample-go-00002-yax] has been deployed and is serving 100 percent of traffic.
+Service URL: https://sample-go-lawvw7teya-uc.a.run.app
+</ql-code-block>
+</li>
+<li>
+<p>Click on the Service URL.</p>
+<p>You should see the same "hello, world" message that you saw displayed in the web preview pane in Task 1.</p>
+</li>
+</ol>
+<h2 id="step9">Task 7. Create a receiving service</h2>
+<p>To test service to service communication, you create a second service that will respond to requests on its service URL. The service will be configured to only serve internal traffic routed to it using the VPC service connector.</p>
+<h3>Create the service</h3>
+<ol>
+<li>
+<p>Change to the sample code folder:</p>
+<ql-code-block language="plaintext">
+cd ~/buildpack-samples/sample-go-service
+</ql-code-block>
+</li>
+<li>
+<p>Using any editor, edit the file <code>hello.go</code> in the <code>sample-go-service</code> folder, and update the <code>/</code> http handler in the <code>main</code> function:</p>
+<ql-code-block language="go">
+http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+     fmt.Fprint(w, "hello, from service B")
+ })
+</ql-code-block>
+</li>
+<li>
+<p>Edit the <code>go.mod</code> file in this folder to update the module entry:</p>
+<ql-code-block language="go">
+module github.com/GoogleCloudPlatform/buildpack-samples/sample-go-service
+</ql-code-block>
+</li>
+</ol>
+<h3>Build and deploy the service to Cloud Run</h3>
+<ol>
+<li>
+<p>Build the second service from source, and deploy it to Cloud Run with the Serverless VPC Access connector allowing internal traffic only:</p>
+<ql-code-block language="bash">
+ gcloud run deploy sample-go-service \
+  --source . \
+  --port=8081 \
+  --vpc-connector=myconnector \
+  --ingress=internal \
+  --region $LOCATION \
+  --allow-unauthenticated
+</ql-code-block>
+</li>
+<li>
+<p>To create the Artifact registry repository, type <strong>Y</strong> at the prompt.</p>
+<p>If successful, after a few minutes you should see output from the command that contains the service URL.</p>
+</li>
+<li>
+<p>Click on the Service URL.</p>
+<p>You should not receive any response from the service since the service is configured to accept internal requests only from within the VPC network or VPC service control perimeter.</p>
+</li>
+</ol>
+<h2 id="step10">Task 8. Test service communication</h2>
+<p>To verify internal service communication, test the services by making a request to the original Cloud Run service.
+You'll also verify the originating IP address of the calling service.</p>
+<h3>Verify service to service communication</h3>
+<ol>
+<li>
+<p>First, update the original Cloud Run service with an environment variable that contains the URL of the second Cloud Run service:</p>
+<ql-code-block language="plaintext">
+gcloud run services update sample-go \
+ --region $LOCATION \
+ --set-env-vars=SERVICE_B_URL=https://sample-go-service-ktyskcmazq-uc.a.run.app
+</ql-code-block>
+<ql-warningbox><strong>Note: </strong>Replace the SERVICE_URL value with the URL to your own second Cloud Run service from the previous step.</ql-warningbox>
+</li>
+<li>
+<p>Use curl with the original service URL, and append the <code>/service</code> request path:</p>
+<ql-code-block language="plaintext">
+curl https://sample-go-lawvw7teya-uc.a.run.app/service
+</ql-code-block>
+<ql-warningbox><strong>Note: </strong>Replace the curl URL with the URL to your own original Cloud Run service.</ql-warningbox>
+<p>The output from the curl command contains the response from the second Cloud Run service B, which was invoked by the original calling service:</p>
+<ql-code-block language="plaintext" output="">
+hello, from service B
+</ql-code-block>
+</li>
+</ol>
+<h3>Verify the originating IP address of the calling service</h3>
+<ol>
+<li>
+<p>Update the service URL environment variable to a service that verifies the originating IP address:</p>
+<ql-code-block language="plaintext">
+gcloud run services update sample-go \
+ --region $LOCATION \
+ --set-env-vars=SERVICE_B_URL=http://curlmyip.org
+</ql-code-block>
+</li>
+<li>
+<p>Use curl with the original service URL, and append the <code>/service</code> request path:</p>
+<ql-code-block language="plaintext">
+curl https://sample-go-lawvw7teya-uc.a.run.app/service
+</ql-code-block>
+<ql-warningbox><strong>Note: </strong>Replace the curl URL with the URL to your own original Cloud Run service.</ql-warningbox>
+<p>The output from the curl command contains the originating IP address.</p>
+</li>
+<li>
+<p>In the Google Cloud console, use the <strong>Navigation menu</strong> (<img alt="navmenu" src="https://cdn.qwiklabs.com/tkgw1TDgj4Q%2BYKQUW4jUFd0O5OEKlUMBRYbhlCrF0WY%3D">), and navigate to <strong>VPC Network &gt; IP Addresses</strong>.</p>
+</li>
+<li>
+<p>Verify that the <code>myoriginip</code> static IP address value matches the IP address in the output of the curl command.</p>
+</li>
+</ol>
+<h2 id="step11">Congratulations!</h2>
+<p>After completing the above steps, you have:</p>
+<ul>
+<li>Set up Cloud NAT on your VPC network with a predefined static IP address.</li>
+<li>Routed all of your Cloud Run service's outbound traffic into your VPC network.</li>
+<li>Sent requests from your Cloud Run service to internal resources (another Cloud Run service) in your VPC network.</li>
+<li>Confirmed that 100% of your traffic for the sample-go service is now flowing through your new VPC connector.</li>
+</ul>
+<p>Follow the  <a href="https://www.youtube.com/playlist?list=PLIivdWyY5sqJwq_pgOxcHzusWjXDVCEiX" target="_blank">Serverless Expeditions video series</a> to learn more about how to utilise these products within your project.</p>
+<ul>
+<li>Cloud Run</li>
+<li>Cloud Tasks</li>
+<li>Cloud Functions</li>
+</ul>
+<p><strong>Manual Last Updated June 27, 2023</strong></p>
+<p><strong>Lab Last Tested June 9, 2023</strong></p>
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Setup and requirements</a></li><li><a href="#step3">Task 1. Enable the Cloud Run API and configure your Shell environment for flexibiilty</a></li><li><a href="#step4">Task 2.  Create a service</a></li><li><a href="#step5">Task 3. Create a subnetwork</a></li><li><a href="#step6">Task 4. Create a serverless VPC Access connector</a></li><li><a href="#step7">Task 5. Configure network address translation (NAT)</a></li><li><a href="#step8">Task 6. Route Cloud Run traffic through the VPC network</a></li><li><a href="#step9">Task 7. Create a receiving service</a></li><li><a href="#step10">Task 8. Test service communication</a></li><li><a href="#step11">Congratulations!</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+This lab teaches the process of configuring a Cloud Run service to send requests using a static IP address.
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+60m access
+&middot;
+60m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>introductory</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/3816">https://googlecoursera.qwiklabs.com/catalog_lab/3816</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="new_lab_review" action="/lab_reviews" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='0' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='0' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="3816" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

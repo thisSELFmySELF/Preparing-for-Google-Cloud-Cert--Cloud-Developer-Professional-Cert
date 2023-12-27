@@ -1,0 +1,964 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>App Dev - Processing Cloud Pub/Sub Data using Cloud Functions: Node.js | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-484f429ecd41bc910509948cecaf71d98c510234.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-644b7af44e10b6334d7881042d33e7eac427c3b8.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-011e84c80a51010837f8d7868d0972aebf80b2b1.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="QD9ryuu+VSJv+fLCqcJPp+ylYgGwzOD5fhJNmjP88ILPP7DVzDgJOB8dLeVMwZcla7a9DAm+BQHV+QChc/G+gA==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;barker&quot;,&quot;community_forum&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;used_in&quot;,&quot;content_provider_admin&quot;,&quot;program_announcements&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;course_upgrade&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;program_learning_assignment&quot;,&quot;teams&quot;,&quot;peer_assignment&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;canonical_domain_redirect&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;search_updates&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='In this lab, you will enhance the online Quiz application by creating a Cloud Function to process Cloud Pub/Sub messages.' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='App Dev - Processing Cloud Pub/Sub Data using Cloud Functions: Node.js | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='In this lab, you will enhance the online Quiz application by creating a Cloud Function to process Cloud Pub/Sub messages.' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32750360?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32750360?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-2bce1f34bff374bb8e1de389ce3467c39fc4868b.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="21615b9812aa5e5b" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>App Dev - Processing Cloud Pub/Sub Data using Cloud Functions: Node.js</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32750360?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32750360?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32750360?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32750360?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32750360?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32750360?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32750360?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32750360?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32750360?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32750360?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32750360?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32750360?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32750360?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32750360?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32750360?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32750360?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32750360?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32750360?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32750360?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<div class='lab-assessment__tab js-open-lab-assessment-panel'>
+<button class='js-lab-assessment-total-score'>
+—/15
+</button>
+</div>
+<div aria-labelledby='lab-assessment-checkpoint' class='lab-assessment__panel js-lab-assessment-panel' role='dialog'>
+<div class='lab-assessment__panel__header'>
+<h4 id='lab-assessment-checkpoint'>Checkpoints</h4>
+<ql-icon-button class='js-close-lab-assessment-panel' icon='arrow_forward' label='Close dialog'></ql-icon-button>
+</div>
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Configure and run the case study application
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Configure and run the case study application' step_no='1'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-1'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Create a Cloud Function
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Create a Cloud Function' step_no='2'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-2'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Package and deploy the Cloud Function code
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Package and deploy the Cloud Function code' step_no='3'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-3'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+</div>
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;App Dev - Processing Cloud Pub/Sub Data using Cloud Functions: Node.js&quot;,&quot;lab_name&quot;:&quot;App Dev - Processing Cloud Pub/Sub Data using Cloud Functions: Node.js&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32750360' data-lab-billing-limit='0.0' data-lab-duration='7200' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:7200}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+App Dev - Processing Cloud Pub/Sub Data using Cloud Functions: Node.js
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>2 hours</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32750360/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.3227'></div>
+
+</a></div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">Overview</h2>
+<p>In this lab, you enhance the online Quiz application by creating a Cloud Function to process Cloud Pub/Sub messages.</p>
+<p>This process harnesses several GCP products in a serverless environment: Cloud Pub/Sub, Cloud Natural Language API, and Cloud Spanner.</p>
+<h2 id="step2">Objectives</h2>
+<p>In this lab, you learn how to perform the following tasks:</p>
+<ul>
+<li>Create a Cloud Function that responds to Cloud Pub/Sub messages.</li>
+<li>Deploy multiple files to a Cloud Function.</li>
+</ul>
+<h2 id="step3">Setup and requirements</h2>
+<p>For each lab, you get a new Google Cloud project and set of resources for a fixed time at no cost.</p>
+<ol>
+<li>
+<p>Sign in to Qwiklabs using an <strong>incognito window</strong>.</p>
+</li>
+<li>
+<p>Note the lab's access time (for example, <code>1:15:00</code>), and make sure you can finish within that time.<br>
+There is no pause feature. You can restart if needed, but you have to start at the beginning.</p>
+</li>
+<li>
+<p>When ready, click <strong>Start lab</strong>.</p>
+</li>
+<li>
+<p>Note your lab credentials (<strong>Username</strong> and <strong>Password</strong>). You will use them to sign in to the Google Cloud Console.</p>
+</li>
+<li>
+<p>Click <strong>Open Google Console</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Use another account</strong> and copy/paste credentials for <strong>this</strong> lab into the prompts.<br>
+If you use other credentials, you'll receive errors or <strong>incur charges</strong>.</p>
+</li>
+<li>
+<p>Accept the terms and skip the recovery resource page.</p>
+</li>
+</ol>
+<aside class="warning"><p><strong>Note:</strong> Do not click <strong>End Lab</strong> unless you have finished the lab or want to restart it. This clears your work and removes the project.
+  </p>
+</aside>
+
+<h3>Activate Google Cloud Shell</h3>
+<p>Google Cloud Shell is a virtual machine that is loaded with development tools. It offers a persistent 5GB home directory and runs on the Google Cloud.</p>
+<p>Google Cloud Shell provides command-line access to your Google Cloud resources.</p>
+<ol>
+<li>
+<p>In Cloud console, on the top right toolbar, click the Open Cloud Shell button.</p>
+<p><img alt="Highlighted Cloud Shell icon" src="https://cdn.qwiklabs.com/00tA48qOVOyHrSa1DA7LwccfwQ9Z%2BE6dkvQ1MYPHzhQ%3D"></p>
+</li>
+<li>
+<p>Click <strong>Continue</strong>.</p>
+</li>
+</ol>
+<p>It takes a few moments to provision and connect to the environment. When you are connected, you are already authenticated, and the project is set to your <em>PROJECT_ID</em>. For example:</p>
+<p><img alt="Project ID highlighted in the Cloud Shell Terminal" src="https://cdn.qwiklabs.com/hmMK0W41Txk%2B20bQyuDP9g60vCdBajIS%2B52iI2f4bYk%3D"></p>
+<p><strong>gcloud</strong> is the command-line tool for Google Cloud. It comes pre-installed on Cloud Shell and supports tab-completion.</p>
+<ul>
+<li>You can list the active account name with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud auth list
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - @.com (active)
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - google1623327_student@qwiklabs.net
+ </ql-code-block>
+<ul>
+<li>You can list the project ID with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud config list project
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+[core]
+project = 
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+[core]
+project = qwiklabs-gcp-44776a13dea667a6
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>
+  Full documentation of <strong>gcloud</strong> is available in the
+  <a href="https://cloud.google.com/sdk/gcloud" target="_blank">
+    gcloud CLI overview guide
+  </a>.
+</ql-infobox>
+
+<h2 id="step4">Task 1. Preparing the case study application</h2>
+<p>In this section, you access Cloud Shell, clone the git repository containing the Quiz application, configure environment variables, and run the application.</p>
+<h3>Clone source code in Cloud Shell</h3>
+<ol>
+<li>To clone the repository for the class, enter the following command:</li>
+</ol>
+<ql-code-block language="bash">
+git clone --depth=1 https://github.com/GoogleCloudPlatform/training-data-analyst
+</ql-code-block>
+<ol start="2">
+<li>Create a soft link as a shortcut to your working directory:</li>
+</ol>
+<ql-code-block language="bash">
+ln -s ~/training-data-analyst/courses/developingapps/v1.3/nodejs/cloudfunctions ~/cloudfunctions
+</ql-code-block>
+<h3>Configure and run the case study application</h3>
+<ol>
+<li>To change the working directory, enter the following command:</li>
+</ol>
+<ql-code-block language="bash">
+cd ~/cloudfunctions/start
+</ql-code-block>
+<ol start="2">
+<li>To configure the Quiz application, enter the following command:</li>
+</ol>
+<ql-code-block language="bash">
+. prepare_environment.sh
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>This script file:
+<ul>
+<li>Creates an App Engine application.</li>
+<li>Exports the environment variables <code>GCLOUD_PROJECT</code> and <code>GCLOUD_BUCKET</code>.</li>
+<li>Runs <code>npm install.</code>
+</li>
+<li>Creates entities in Cloud Datastore.</li>
+<li>Creates a Cloud Pub/Sub topic.</li>
+<li>Creates a Cloud Spanner Instance, Database, and Table.</li>
+<li>Prints out the Google Cloud Project ID.</li>
+</ul>
+</ql-infobox>
+<ol start="3">
+<li>To run the web application, enter the following command:</li>
+</ol>
+<ql-code-block language="bash">
+npm start
+</ql-code-block>
+<p>Click <strong>Check my progress</strong> to verify the objective.
+<ql-activity-tracking step="1">
+Configure and run the case study application
+</ql-activity-tracking></p>
+<h2 id="step5">Task 2. Working with Cloud Functions</h2>
+<p>In this section, you create a Cloud Function in your Google Cloud project that is triggered by publishing a message to Cloud Pub/Sub, runs the application, and monitors the Cloud Function invocation.</p>
+<h3><strong>Create a Cloud Function</strong></h3>
+<ol>
+<li>Return to the <strong>Cloud Platform Console</strong>.</li>
+<li>On the <strong>Navigation menu</strong>, select <strong>Cloud Functions</strong>.</li>
+<li>If necessary, click <strong>Enable API</strong>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>It might take a minute or two to enable the Cloud Functions API.</ql-infobox>
+<ol start="4">
+<li>Click <strong>Create function</strong>.</li>
+</ol>
+<p>In the Create function dialog , set the following properties and leave the remaining settings as their defaults:</p>
+<table>
+
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+
+
+<tr>
+<td><strong>Function name</strong></td>
+<td><strong>process-feedback</strong></td>
+</tr>
+<tr>
+<td><strong>Trigger type</strong></td>
+<td><strong>Cloud Pub/Sub</strong></td>
+</tr>
+<tr>
+<td><strong>Topic</strong></td>
+<td>Select <strong>projects/[PROJECT_ID]/topics/feedback</strong>
+</td>
+</tr>
+
+</table>
+<ol start="5">
+<li>
+<p>Click <strong>Save</strong>, and then click <strong>Next</strong>.</p>
+</li>
+<li>
+<p>Review the provided function implementation, and then click <strong>Deploy</strong>.</p>
+</li>
+</ol>
+<ql-infobox><strong>Note: </strong>It might take a minute or two to create the Cloud Function.
+</ql-infobox>
+<p>Click <strong>Check my progress</strong> to verify the objective.
+<ql-activity-tracking step="2">
+Create a Cloud Function
+</ql-activity-tracking></p>
+<h3><strong>Run the web application</strong></h3>
+<ol>
+<li>Return to the <strong>Cloud Shell</strong> window.</li>
+<li>Preview the web application by clicking on the Web Preview button and selecting <strong>Preview on port 8080</strong>.</li>
+<li>Click <strong>Take Test</strong>.</li>
+<li>Click <strong>Places</strong>.</li>
+<li>Complete the question.</li>
+<li>Rate the quiz, enter some feedback, and then click <strong>Send Feedback</strong>.</li>
+</ol>
+<h3><strong>View Cloud Function monitoring and logs</strong></h3>
+<ol>
+<li>Return to the <strong>Cloud Platform Console</strong>, on the <strong>Cloud Functions</strong> page.</li>
+<li>Click <strong>process-feedback</strong>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see a monitoring graph for Cloud Function invocations.
+It takes a few minutes for the graph to show the invocation of your function.
+</ql-infobox>
+<ol start="3">
+<li>Click the <strong>Logs</strong> tab to view your logs.</li>
+<li>You can view your logs in the logs explorer by clicking the link on the upper right of the page.</li>
+<li>If your Cloud Pub/Sub message isn't displayed, click <strong>Refresh</strong>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see the log entries collected from the Cloud Function.
+It takes a few minutes for the logs to show the invocation of your function.
+</ql-infobox>
+<ol start="6">
+<li>Go to Cloud Shell to also see your feedback.</li>
+</ol>
+<h2 id="step6">Task 3. Examining the case study application code</h2>
+<p>In this section, you use the Cloud Shell text editor to review the case study application code.</p>
+<h3>Launch the Cloud Shell Editor</h3>
+<ol>
+<li>In the <strong>Cloud Platform Console</strong>, click <strong>Open Editor</strong>.</li>
+</ol>
+<p><img alt="Open Editor button highlighted" src="https://cdn.qwiklabs.com/ImLReX%2F5QWFFOFpL%2FBCIeTzdY94ObO3QeVax0KpTsOM%3D"></p>
+<h3>Review the Cloud Function application code structure</h3>
+<ol>
+<li>Navigate to <strong>cloudfunctions/start</strong>.</li>
+<li>Select the <strong>index.js</strong> file in the <strong>...function</strong> folder.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>This file contains the same code as the sample from the Cloud Functions window in the Cloud Console, with one change: because the function you will write returns a Promise, the callback argument has been omitted.
+</ql-infobox>
+<ol start="3">
+<li>Select the <strong>package.json</strong> file.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>This file contains the list of dependencies that this function needs to run.
+Cloud Functions automatically install the dependencies.
+</ql-infobox>
+<ol start="4">
+<li>Select the <strong>languageapi.js</strong> file.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>This file contains code to process feedback text and return the Natural Language ML API sentiment score.
+</ql-infobox>
+<ol start="5">
+<li>Select the <strong>spanner.js</strong> file.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>This file contains code to insert a record into a Cloud Spanner database.
+</ql-infobox>
+<h2 id="step7">Task 4. Coding a Cloud Function</h2>
+<p>In this section you write the code to create a Cloud Function that retrieves the Cloud Pub/Sub message data, invokes the Natural Language ML API to perform sentiment detection, and inserts a record into Cloud Spanner.</p>
+<ql-warningbox><strong>Note: </strong>Update code within the sections marked as follows:<p></p>
+<code>// TODO </code><p></p>
+<code>// END TODO </code><p></p>
+To maximize your learning, review the code, inline comments, and related API documentation.
+</ql-warningbox>
+<h3>Write code to modify a Cloud Function</h3>
+<ol>
+<li>Return to the <code>...function/index.js</code> file.</li>
+<li>Load the <code>languageapi</code> and <code>spanner</code> modules. These modules are in the same folder as the <code>index.js</code> file.</li>
+<li>In the <code>subscribe()</code> method, after the existing code that loads the Cloud Pub/Sub message into a buffer, convert the PubSub message into a feedback object by parsing it as JSON data.</li>
+<li>Return a promise that invokes the <code>languageapi</code> module's  <code>analyze</code> method to analyze the feedback text.</li>
+<li>Chain a <code>.then(...)</code> method to the end of the return statement.</li>
+<li>Supply an arrow function as the value of the callback.</li>
+<li>In the body of the arrow function, log the Natural Language API sentiment score to the console.</li>
+<li>Add a new property called score to the feedback object.</li>
+<li>Complete the arrow function body by returning the feedback object.</li>
+<li>Chain a second <code>.then(...)</code> method to the end of the first one. This one uses the <code>spanner</code> module to save the feedback.</li>
+<li>Write a third <code>.then(...)</code> chained method, including an arrow function with no arguments and an empty body as the value of the callback.</li>
+<li>In the body of this callback, log a message to indicate that the feedback has been saved, and return a success message.</li>
+<li>Attach a <code>.catch(...)</code> handler to the end of the chain, which logs the error message to the console.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>Here's how your function should look when you're done.
+</ql-infobox>
+<h4>function/index.js</h4>
+<ql-code-block output="">
+// TODO: Load the ./languageapi module
+
+const languageAPI = require('./languageapi');
+
+// END TODO
+
+// TODO: Load the ./spanner module
+
+const feedbackStorage = require('./spanner');
+
+// END TODO
+
+exports.subscribe = function subscribe(event) {
+  // The Cloud Pub/Sub Message object.
+  // TODO: Decode the Cloud Pub/Sub message
+  // extracting the feedbackObject data
+  // The message received from Pub/Sub is base64 encoded, and
+  // the data submitted by students is in a data property     
+
+  const pubsubMessage = Buffer.from(event.data, 'base64').toString();
+
+  let feedbackObject = JSON.parse(pubsubMessage);
+  console.log('Feedback object data before Language API:' + JSON.stringify(feedbackObject));
+
+  // END TODO
+
+  // TODO: Run Natural Language API sentiment analysis
+  // The analyze(...) method expects to be passed the
+  // feedback text from the feedbackObject as an argument,
+  // and returns a Promise.
+
+  return languageAPI.analyze(feedbackObject.feedback).then(score =&gt; {
+
+    // TODO: Log the sentiment score
+
+  	console.log(`Score: ${score}`);
+
+    // END TODO
+
+    // TODO: Add new score property to feedbackObject
+
+  	feedbackObject.score = score;
+
+    // END TODO
+
+    // TODO: Pass feedback object to the next handler
+
+  	return feedbackObject;
+
+    // END TODO
+  })
+
+  // TODO: insert record
+  .then(feedbackStorage.saveFeedback).then(() =&gt; {
+  	// TODO: Log and return success
+
+    console.log('feedback saved...');
+  	return 'success';
+
+    // END TODO
+
+  })
+  // END TODO
+
+  // TODO: Catch and Log error
+  .catch(console.error);
+  // End TODO
+
+};
+</ql-code-block>
+<ol start="14">
+<li>Save the file.</li>
+</ol>
+<h3>Package and deploy the Cloud Function code</h3>
+<ol>
+<li>Return to <strong>Cloud Shell</strong> and stop the web application by pressing <strong>Ctrl+C</strong>.</li>
+<li>To change the working directory to the Cloud Function code, enter the following command:</li>
+</ol>
+<ql-code-block language="bash">
+cd function
+</ql-code-block>
+<ol start="3">
+<li>To zip up the files needed to deploy the function, enter the following command:</li>
+</ol>
+<ql-code-block language="bash">
+zip cf.zip *.js*
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>This generates a zip archive named <code>cf.zip</code> that includes all the JavaScript and JSON files in the folder.
+</ql-infobox>
+<ol start="4">
+<li>To stage the zip file into Cloud Storage, enter the following command:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud storage cp cf.zip gs://$GCLOUD_BUCKET/
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>This copies the zip archive into the Cloud Storage bucket named after your project ID with a <code>-media</code> suffix.
+</ql-infobox>
+<ol start="5">
+<li>Return to the <strong>Cloud Platform Console</strong> and navigate to <strong>Cloud Functions</strong>.</li>
+<li>Select the <strong>process-feedback</strong> function.</li>
+<li>Click <strong>Edit</strong>.</li>
+<li>Click <strong>Next</strong>.</li>
+<li>Under <strong>Source code</strong>, select <strong>ZIP from Cloud Storage</strong>.</li>
+<li>For <strong>Cloud Storage location</strong>, click <strong>Browse</strong>.</li>
+<li>Select the <strong>cf.zip</strong> file in the bucket named after your project ID with the <code>-media</code> suffix, and click <strong>Select</strong>.</li>
+<li>In the <strong>Entry point</strong> field, type <strong>subscribe</strong>.</li>
+<li>Click <strong>Deploy</strong>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>It may take a minute or two to update the <strong>process-feedback</strong> function with your new code that performs sentiment analysis with the Cloud Natural Language Machine Learning API and inserts data into Cloud Spanner.
+</ql-infobox>
+<ql-activity-tracking step="3">
+Package and deploy the Cloud Function code
+</ql-activity-tracking>
+<h2 id="step8">Task 5. Testing the case study application</h2>
+<h3>Run the web application</h3>
+<ol>
+<li>Return to the <strong>Cloud Shell</strong> window.</li>
+<li>Change the working folder back to the <code>start</code> folder for the <strong>cloudfunctions</strong> lab:</li>
+</ol>
+<ql-code-block language="bash">
+cd ..
+</ql-code-block>
+<ol start="3">
+<li>To start the web application, execute the following command:</li>
+</ol>
+<ql-code-block language="bash">
+npm start
+</ql-code-block>
+<ol start="4">
+<li>Preview the web application.</li>
+<li>Click <strong>Take Test</strong>.</li>
+<li>Click <strong>Places</strong>.</li>
+<li>Complete the question.</li>
+<li>Enter some feedback, and click <strong>Send Feedback</strong>.</li>
+</ol>
+<h3>View Cloud Function monitoring and logs</h3>
+<ol>
+<li>Return to the <strong>Cloud Functions</strong> section of the <strong>Cloud Platform Console</strong>.</li>
+<li>Click the function name, <strong>process-feedback</strong>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see a monitoring graph for Cloud Function invocations.
+It takes a few minutes for the graph to show the invocation of your function.
+</ql-infobox>
+<ol start="3">
+<li>Click the <strong>Logs</strong> tab to view your logs.</li>
+<li>You can view your logs in the logs explorer by clicking the link on the upper right of the page.</li>
+<li>If your Cloud Pub/Sub message isn't displayed, click <strong>Refresh</strong>.</li>
+<li>Refresh the logs every few minutes until the log entries show that your function executed.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see the log entries collected from the Cloud Function.
+You should now see a score from the Language API in the logs.
+It may takes a few minutes for the logs to show the invocation of your function.
+</ql-infobox>
+<h3>View Cloud Spanner data</h3>
+<ol>
+<li>On the <strong>Navigation menu</strong>, click <strong>Spanner</strong>.</li>
+<li>Click <strong>Quiz instance</strong>, Under the Databeses click <strong>quiz-database</strong> and then on the left pane select <strong>Query</strong>.</li>
+<li>Run the following query:</li>
+</ol>
+<ql-code-block language="sql">
+SELECT * FROM Feedback
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>You should see that a new record has been added to the Feedback table.
+</ql-infobox>
+<h2 id="step9">Task 6. Bonus: Storing student answers using a Cloud Function</h2>
+<p>When a student completes a quiz, their answers are submitted in an API call back to the server. Your job is to capture the student-submitted answers and the correct answers and save them into Cloud Spanner. You should see that a new record has been added to the Feedback table.</p>
+<p>To do this:</p>
+<ol>
+<li>Create a Cloud Pub/Sub topic called answers.</li>
+<li>Create a Cloud Spanner table called Answers with appropriate column names and data types.</li>
+<li>Post the answer data to the answers topic.</li>
+<li>Subscribe to the answers topic in the console application and insert the answer data into the Answers table.</li>
+</ol>
+<p>The details are left up to you! You can find the solution to the bonus in the lab's <strong>bonus</strong> folder.</p>
+<ql-infobox><strong>Review: </strong>
+<p></p>
+Which triggers can be used with Cloud Functions?
+<ul>
+<li>Cloud Pub/Sub</li>
+<li>Cloud Spanner</li>
+<li>Cloud Storage</li>
+<li>HTTP</li>
+</ul>
+<p></p>
+With a Cloud Function triggered by Cloud Pub/Sub, how is the message
+delivered?
+<ul>
+<li>Base64 encoded</li>
+<li>CSV encoded</li>
+<li>Tarred and Gzipped</li>
+<li>Zipped</li>
+</ul>
+<p></p>
+What is the maximum execution time for a Cloud Function?
+<ul>
+<li>60 seconds</li>
+<li>540 seconds</li>
+<li>Unlimited</li>
+</ul>
+</ql-infobox>
+<h2 id="step10">End your lab</h2>
+<p>When you have completed your lab, click <strong>End Lab</strong>. Google Cloud Skills Boost removes the resources you’ve used and cleans the account for you.</p>
+<p>You will be given an opportunity to rate the lab experience. Select the applicable number of stars, type a comment, and then click <strong>Submit</strong>.</p>
+<p>The number of stars indicates the following:</p>
+<ul>
+<li>1 star = Very dissatisfied</li>
+<li>2 stars = Dissatisfied</li>
+<li>3 stars = Neutral</li>
+<li>4 stars = Satisfied</li>
+<li>5 stars = Very satisfied</li>
+</ul>
+<p>You can close the dialog box if you don't want to provide feedback.</p>
+<p>For feedback, suggestions, or corrections, please use the <strong>Support</strong> tab.</p>
+
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+
+
+
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Objectives</a></li><li><a href="#step3">Setup and requirements</a></li><li><a href="#step4">Task 1. Preparing the case study application</a></li><li><a href="#step5">Task 2. Working with Cloud Functions</a></li><li><a href="#step6">Task 3. Examining the case study application code</a></li><li><a href="#step7">Task 4. Coding a Cloud Function</a></li><li><a href="#step8">Task 5. Testing the case study application</a></li><li><a href="#step9">Task 6. Bonus: Storing student answers using a Cloud Function</a></li><li><a href="#step10">End your lab</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+In this lab, you will enhance the online Quiz application by creating a Cloud Function to process Cloud Pub/Sub messages.
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+120m access
+&middot;
+120m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>introductory</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/2367">https://googlecoursera.qwiklabs.com/catalog_lab/2367</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="new_lab_review" action="/lab_reviews" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='0' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='0' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="2367" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,900 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Cloud SQL with Cloud Run [APPRUN] | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-484f429ecd41bc910509948cecaf71d98c510234.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-644b7af44e10b6334d7881042d33e7eac427c3b8.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-011e84c80a51010837f8d7868d0972aebf80b2b1.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="QPvuDz0lhsACrJuH+G81PK4VF8W5DR9yFmau4MZKUmfn7g9L+snZyE1sEQCqYJvNqf50DaiT/p4npAafoge/hg==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;barker&quot;,&quot;community_forum&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;used_in&quot;,&quot;content_provider_admin&quot;,&quot;program_announcements&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;course_upgrade&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;program_learning_assignment&quot;,&quot;teams&quot;,&quot;peer_assignment&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;canonical_domain_redirect&quot;,&quot;alexandria_show_bundle_errors&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='Learn how to deploy Cloud SQL and integrate with Cloud Run' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Cloud SQL with Cloud Run [APPRUN] | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='Learn how to deploy Cloud SQL and integrate with Cloud Run' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32771406?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32771406?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-2bce1f34bff374bb8e1de389ce3467c39fc4868b.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="60e966c55c4a65ba" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Cloud SQL with Cloud Run [APPRUN]</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32771406?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32771406?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32771406?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32771406?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32771406?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32771406?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32771406?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32771406?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32771406?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32771406?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32771406?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32771406?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32771406?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32771406?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32771406?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32771406?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32771406?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32771406?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32771406?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Cloud SQL with Cloud Run [APPRUN]&quot;,&quot;lab_name&quot;:&quot;Cloud SQL with Cloud Run [APPRUN]&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32771406' data-lab-billing-limit='0.0' data-lab-duration='2700' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:2700}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Cloud SQL with Cloud Run [APPRUN]
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>45 minutes</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32771406/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.5257'></div>
+
+</a></div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">CBL417</h2>
+<p><img alt="Google Cloud Self-Paced Labs" src="https://cdn.qwiklabs.com/GMOHykaqmlTHiqEeQXTySaMXYPHeIvaqa2qHEzw6Occ%3D"></p>
+<h2 id="step2">Overview</h2>
+<p>Cloud SQL automatically ensures your databases are reliable, secure, and scalable so that your business continues to run without disruption.
+Cloud SQL automates all your backups, replication, encryption patches, and capacity increases—while ensuring greater than 99.95% availability, anywhere in the world.</p>
+<p>Lab content is based on resolving a customer use case through the use of serverless infrastructure.
+The lab features three high level sections that resolve a technical problem:</p>
+<ul>
+<li>
+<p>Situational Overview</p>
+</li>
+<li>
+<p>Requirements Gathering</p>
+</li>
+<li>
+<p>Developing a minimal viable product</p>
+</li>
+</ul>
+<h3>Prerequisites</h3>
+<p>These labs are based on intermediate knowledge of Google Cloud.
+While the steps required are covered in the content, it would be helpful to have familiarity with any of the following products:</p>
+<ul>
+<li>
+<p>Cloud Build</p>
+</li>
+<li>
+<p>Cloud Tasks</p>
+</li>
+<li>
+<p>Cloud Run</p>
+</li>
+<li>
+<p>Cloud SQL</p>
+</li>
+</ul>
+<h3>Objectives</h3>
+<p>In this lab, you learn to:</p>
+<ul>
+<li>
+<p>Configure the environment and enable the Cloud Run API.</p>
+</li>
+<li>
+<p>Create a Cloud SQL instance.</p>
+</li>
+<li>
+<p>Populate a Cloud SQL instance.</p>
+</li>
+<li>
+<p>Use environment variables for the Cloud Run service.</p>
+</li>
+<li>
+<p>Deploy a public Cloud Run service.</p>
+</li>
+</ul>
+<h2 id="step3">Setup and requirements</h2>
+<h4>Before you click the Start Lab button</h4>
+<ql-warningbox><strong>Note: Read these instructions.</strong>
+<p></p>
+Labs are timed and you cannot pause them. The timer, which starts when you click <b>Start Lab</b>, shows how long Google Cloud resources will be made available to you.</ql-warningbox>
+<p>This Qwiklabs hands-on lab lets you do the lab activities yourself in a real cloud environment, not in a simulation or demo environment. It does so by giving you new, temporary credentials that you use to sign in and access Google Cloud for the duration of the lab.</p>
+<h4>What you need</h4>
+<p>To complete this lab, you need:</p>
+<ul>
+<li>Access to a standard internet browser (Chrome browser recommended).</li>
+<li>Time to complete the lab.</li>
+</ul>
+<ql-warningbox><strong>Note: </strong>If you already have your own personal Google Cloud account or project, do not use it for this lab.</ql-warningbox>
+<ql-infobox><strong>Note: </strong>If you are using a Pixelbook, open an Incognito window to run this lab.</ql-infobox>
+<h2 id="step4">Situational overview</h2>
+<p><strong>Scenario:</strong> In this lab, you will help the development team at Critter Junction investigate Cloud SQL. The company runs its infrastructure on Google Cloud and is very interested in experimenting with serverless.</p>
+<p>The dev team would like to explore how to use Cloud SQL and Cloud Run.</p>
+<h3>Requirements gathering</h3>
+<p>The team at Critter Junction have a web application that requires a data store.
+Cloud SQL appears to be a good solution, but the team does not have any experience with this product.</p>
+<p>The team would also like a solution that does not introduce any additional complexity to their systems.
+Historically they have used PostgreSQL so would like to use that if it's an option.
+Now you know a bit more about Critter Junction and the issues they face, try and prioritise the key criteria for a solution.</p>
+<h3>Defining Critter Junction priorities</h3>
+<p>The team at Critter Junction are keen to define a solution that can be implemented quickly.
+They explain their current event processing as represented by the diagram illustrated below:</p>
+<p>A series of meetings with stakeholders are held to ascertain the key priorities.
+The results of which are shown below:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Ref</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>User Story</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As a development  lead, I want to focus on frontend development, so my team can maintain velocity.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As a data lead, I want to focus on existing skill sets, so that developers minimize learning new products. </p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>As an ops lead, I want to ensure service accounts are used, so product authentication is handled internally.</p>
+</td>
+</tr>
+</table>
+<p>From a discussion with the team leads, the following high level tasks are defined:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Ref</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Definition of Done</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Deploy the website using Cloud Run</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Use Cloud SQL with Postgres </p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Use a Service Account with Cloud SQL with minimise IAM permissions</p>
+</td>
+</tr>
+</table>
+<p>The following high level architecture diagram summaries the minimal viable product they wish to investigate.</p>
+<p><img alt="The Critter Junction architecture diagram" src="https://cdn.qwiklabs.com/dLNzsrAS6RbtI2qDdAPtL5xUg%2F2jXrWMDbY55bY5zEM%3D"></p>
+<p>In the proposed solution, Cloud SQL will be used to handle the data tier.</p>
+<h3>Developing a minimal viable product (MVP)</h3>
+<p>Critter Junction has a website that they would like to integrate with Cloud SQL.
+To build an MVP the following activities are required:</p>
+<ul>
+<li>
+<p>Configure the environment</p>
+</li>
+<li>
+<p>Create a Cloud SQL instance</p>
+</li>
+<li>
+<p>Use environment variables for the Cloud Run service</p>
+</li>
+<li>
+<p>Deploy a public Cloud Run service</p>
+</li>
+</ul>
+<h2 id="step5">Task 1. Configure the environment</h2>
+<p>Set up some environment variables to make the provisioning process more flexible</p>
+<ol>
+<li>
+<p>Enable Cloud Run API:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+gcloud services enable run.googleapis.com
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Set the compute region:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+gcloud config set compute/region us-central1
+</ql-code-block>
+<ol start="3">
+<li>
+<p>Create a LOCATION environment variable:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+LOCATION="us-central1"
+</ql-code-block>
+<h2 id="step6">Cloud SQL overview</h2>
+<p>Google Cloud SQL is a fully managed relational database service for <strong>MySQL, PostgreSQL, and SQL Server</strong>.</p>
+<p>Cloud SQL key features:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Feature</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Fully Managed</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Cloud SQL automatically ensures your databases are reliable, secure, and scalable so that your business continues to run without disruption. Cloud SQL automates all your backups, replication, encryption patches, and capacity increases—while ensuring greater than 99.95% availability, anywhere in the world.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Integrated</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Access Cloud SQL instances from just about any application. Easily connect from <a href="https://cloud.google.com/appengine" target="_blank">App Engine</a>, <a href="https://cloud.google.com/compute" target="_blank">Compute Engine</a>, <a href="https://cloud.google.com/kubernetes-engine" target="_blank">Google Kubernetes Engine</a>, and your workstation. Open up analytics possibilities by using BigQuery to <a href="https://cloud.google.com/bigquery/docs/cloud-sql-federated-queries" target="_blank">directly query</a> your Cloud SQL databases.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Reliable</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Easily configure replication and backups to protect your data. Go further by enabling automatic failover to make your database highly available. Your data is automatically encrypted, and Cloud SQL is SSAE 16, ISO 27001, and PCI DSS compliant and supports HIPAA compliance.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Easy Migration to Cloud SQL</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Database Migration Service (DMS) makes it easy to migrate your production databases to Cloud SQL with minimal downtime. This serverless offering eliminates the manual hassle of provisioning, managing, and monitoring migration-specific resources. DMS leverages the native replication capabilities of MySQL and PostgreSQL to maximize the fidelity and reliability of your migration. And it's available at no additional charge for native like-to-like migrations to Cloud SQL.</p>
+</td>
+</tr>
+</table>
+<p>Now you understand what Cloud SQL provides, it is time to configure our project to use it.</p>
+<h2 id="step7">Task 2. Create a Cloud SQL instance</h2>
+<p>As you now know Cloud SQL requires a number of configuration options.
+Learn how to configure a PostgreSQL database in the following section.</p>
+<p>Create a new Cloud SQL instance and add the following values.</p>
+<ol>
+<li>Create a PostgreSQL instance with the following values:</li>
+</ol>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Field</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Value</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Instance ID</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>poll-database</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Password</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>secretpassword</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Database version</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>PostgreSQL 13</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Region</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>us-central1</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Zone</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Single Zone</p>
+</td>
+</tr>
+</table>
+<ol start="2">
+<li>Click "<strong>Create Instance</strong>".
+<img alt="The Create a PostgreSQL instance dialog box" src="https://cdn.qwiklabs.com/t5fdGm%2FMBh6J2QndoN8Ubc7bPO3AEhvZlZ%2BhI6ie%2F8o%3D">
+</li>
+</ol>
+<ql-infobox><strong>Note: </strong>
+Cloud SQL uses a connection name which is composed of the project ID + region + database name. 
+A service account is also created to be used to access the database created.
+</ql-infobox>
+<ol start="3">
+<li>
+<p>Instance connection settings:</p>
+</li>
+</ol>
+<ul>
+<li>Public IP address: 35.226.3.123</li>
+<li>Outgoing IP address: 35.193.232.182</li>
+<li>Conenction name: qwiklabs-gcp-02-910e49da65f7:us-central1:poll-database</li>
+</ul>
+<p><img alt="The Connect to this instance dialog box displaying the public and outgoing IP addresses, as well as the connection name" src="https://cdn.qwiklabs.com/ZTpmPYp4OO2%2Fgyp%2FRF%2FEsq1dbE%2BlSPYe1iK%2BnFvTUWw%3D"></p>
+<ol start="4">
+<li>Service Account setting:</li>
+</ol>
+<p><img alt="The Service account setting" src="https://cdn.qwiklabs.com/9tYnUWAkgzcllmGaYwcSQ37HuOWE3%2F%2FjF9NlkYbCwtU%3D"></p>
+<p>Great work!</p>
+<p>The Cloud SQL database has been created successfully.
+In the next section populate the database with the required table and data.</p>
+<h2 id="step8">Task 3. Populate the Cloud SQL instance</h2>
+<p>As you now know Cloud SQL requires a number of configuration options.
+Learn how to configure a PostgreSQL database in the following section.</p>
+<p>Create a new Cloud SQL instance and add the following values.</p>
+<ol>
+<li>
+<p>Connect to the Cloud SQL instance (Allowlist will be created for Cloud Shell IP):</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+gcloud sql connect poll-database --user=postgres
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Enter the Cloud SQL password when requested (i.e. "secretpassword").</p>
+</li>
+<li>
+<p>Connect to the database:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+\connect postgres;
+</ql-code-block>
+<ol start="4">
+<li>
+<p>Create the <code>votes</code> table:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+CREATE TABLE IF NOT EXISTS votes
+( vote_id SERIAL NOT NULL, time_cast timestamp NOT NULL,
+candidate VARCHAR(6) NOT NULL, PRIMARY KEY (vote_id) );
+</ql-code-block>
+<ol start="5">
+<li>
+<p>Create the <code>totals</code> table:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+CREATE TABLE IF NOT EXISTS totals
+( total_id SERIAL NOT NULL, candidate VARCHAR(6) NOT NULL,
+num_votes INT DEFAULT 0, PRIMARY KEY (total_id) );
+</ql-code-block>
+<ol start="6">
+<li>
+<p>Initialise the data for Tabs:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+INSERT INTO totals (candidate, num_votes) VALUES ('TABS', 0);
+</ql-code-block>
+<ol start="7">
+<li>
+<p>Initialise the data for Spaces:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+INSERT INTO totals (candidate, num_votes) VALUES ('SPACES', 0);
+</ql-code-block>
+<p>The Cloud SQL database has been successfully populated with the data required for the application.
+In the next section deploy a Cloud Run service to connect to the database.</p>
+<h2 id="step9">Task 4. Deploy a public service</h2>
+<p>To provision the tabspaces service the application expects some environment variables to be set.</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Environment Value</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>DB_USER</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Name of the database user</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>DB_PASS</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Password for the database user</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>DB_NAME</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Name of the database</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>CLOUD_SQL_CONNECTION_NAME</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>The name given to the Cloud SQL instance</p>
+</td>
+</tr>
+</table>
+<p>The environment values will be passed to the application and used by the deployed application.</p>
+<p>Deploy the Poll service on Cloud Run.</p>
+<ol>
+<li>
+<p>Set the environment variables for the Cloud SQL connection:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+CLOUD_SQL_CONNECTION_NAME=$(gcloud sql instances describe poll-database --format='value(connectionName)')
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Deploy poll Cloud RUN service:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+gcloud beta run deploy poll-service \
+   --image gcr.io/qwiklabs-resources/gsp737-tabspaces \
+   --region $LOCATION \
+   --allow-unauthenticated \
+   --add-cloudsql-instances=$CLOUD_SQL_CONNECTION_NAME \
+   --set-env-vars "DB_USER=postgres" \
+   --set-env-vars "DB_PASS=secretpassword" \
+   --set-env-vars "DB_NAME=postgres" \
+   --set-env-vars "CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME"
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>
+Cloud Run uses key value pairs to define environment variables. 
+Find out more by reading the Cloud Run documentation using <a href="https://cloud.google.com/run/docs/configuring/environment-variables?hl=vi%5C#command-line" target="_blank">Environment Variables</a>.
+</ql-infobox>
+<ol start="3">
+<li>
+<p>The Cloud Run service endpoint can be accessed as per below:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+POLL_APP_URL=$(gcloud run services describe poll-service --platform managed --region us-central1 --format="value(status.address.url)")
+</ql-code-block>
+<h2 id="step10">Task 5. Testing the application</h2>
+<ul>
+<li>To test the application browse to the Cloud Run endpoint and enter some data.</li>
+</ul>
+<p>The Poll service should look similar to below:</p>
+<p><img alt="The Tabs versus Spaces poll page" src="https://cdn.qwiklabs.com/pzy7Yl4wEAEg7b%2Bqp3Cee1suSvm9yKgu1%2BdnT9s5ino%3D"></p>
+<h2 id="step11">Congratulations!</h2>
+<p>Over this course of this lab, you have seen how to incorporate Cloud SQL within your Google Cloud infrastructure.</p>
+<ul>
+<li>Provision a Cloud SQL instance</li>
+<li>Deployed Cloud Run</li>
+<li>Used environment variables to config a Serverless resource</li>
+<li>Connected Cloud Run to Cloud SQL</li>
+</ul>
+<p>Follow the  <a href="https://www.youtube.com/playlist?list=PLIivdWyY5sqJwq_pgOxcHzusWjXDVCEiX" target="_blank">Serverless Expeditions video series</a> to learn more about how to utilise these products within your project.</p>
+<ul>
+<li>Cloud Run</li>
+<li>Cloud Tasks</li>
+<li>Cloud Functions</li>
+</ul>
+<p><strong>Manual Last Updated September 29, 2022</strong></p>
+<p><strong>Lab Last Tested June 30, 2021</strong></p>
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">CBL417</a></li><li><a href="#step2">Overview</a></li><li><a href="#step3">Setup and requirements</a></li><li><a href="#step4">Situational overview</a></li><li><a href="#step5">Task 1. Configure the environment</a></li><li><a href="#step6">Cloud SQL overview</a></li><li><a href="#step7">Task 2. Create a Cloud SQL instance</a></li><li><a href="#step8">Task 3. Populate the Cloud SQL instance</a></li><li><a href="#step9">Task 4. Deploy a public service</a></li><li><a href="#step10">Task 5. Testing the application</a></li><li><a href="#step11">Congratulations!</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+Learn how to deploy Cloud SQL and integrate with Cloud Run
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+45m access
+&middot;
+45m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>introductory</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/3817">https://googlecoursera.qwiklabs.com/catalog_lab/3817</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="new_lab_review" action="/lab_reviews" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='0' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='0' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="3817" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

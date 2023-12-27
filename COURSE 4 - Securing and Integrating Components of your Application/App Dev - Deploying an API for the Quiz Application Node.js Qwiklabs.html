@@ -1,0 +1,1217 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>App Dev - Deploying an API for the Quiz Application: Node.js | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-484f429ecd41bc910509948cecaf71d98c510234.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-644b7af44e10b6334d7881042d33e7eac427c3b8.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-011e84c80a51010837f8d7868d0972aebf80b2b1.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="HY23a5nTfiR2qy/mzwL19fWydkO/TywQZryjV09f6Kk3bNctAAGAG4ZFQhhX7tQPRissC7zd1eciNXmGM6kkaw==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;barker&quot;,&quot;community_forum&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;used_in&quot;,&quot;content_provider_admin&quot;,&quot;program_announcements&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;course_upgrade&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;program_learning_assignment&quot;,&quot;teams&quot;,&quot;peer_assignment&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;canonical_domain_redirect&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;search_updates&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='In this lab, you will deploy the quiz application API into Compute Engine, leveraging Cloud Endpoints to provide monitoring and logging functionality.' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='App Dev - Deploying an API for the Quiz Application: Node.js | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='In this lab, you will deploy the quiz application API into Compute Engine, leveraging Cloud Endpoints to provide monitoring and logging functionality.' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32750662?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32750662?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-2bce1f34bff374bb8e1de389ce3467c39fc4868b.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="683359f8cda800e2" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>App Dev - Deploying an API for the Quiz Application: Node.js</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32750662?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32750662?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32750662?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32750662?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32750662?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32750662?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32750662?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32750662?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32750662?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32750662?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32750662?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32750662?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32750662?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32750662?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32750662?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32750662?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32750662?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32750662?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32750662?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<div class='lab-assessment__tab js-open-lab-assessment-panel'>
+<button class='js-lab-assessment-total-score'>
+—/10
+</button>
+</div>
+<div aria-labelledby='lab-assessment-checkpoint' class='lab-assessment__panel js-lab-assessment-panel' role='dialog'>
+<div class='lab-assessment__panel__header'>
+<h4 id='lab-assessment-checkpoint'>Checkpoints</h4>
+<ql-icon-button class='js-close-lab-assessment-panel' icon='arrow_forward' label='Close dialog'></ql-icon-button>
+</div>
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Configure and run the case study application
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Configure and run the case study application' step_no='1'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-1'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Create a Compute Engine Instance and install the software prerequisites
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Create a Compute Engine Instance and install the software prerequisites' step_no='2'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-2'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+</div>
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;App Dev - Deploying an API for the Quiz Application: Node.js&quot;,&quot;lab_name&quot;:&quot;App Dev - Deploying an API for the Quiz Application: Node.js&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32750662' data-lab-billing-limit='0.0' data-lab-duration='7200' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:7200}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+App Dev - Deploying an API for the Quiz Application: Node.js
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>2 hours</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32750662/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='3.9105'></div>
+
+</a></div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">Overview</h2>
+<p>In this lab, you deploy the Quiz application API into Google Compute Engine and leverage Cloud Endpoints to provide monitoring functionality.</p>
+<h2 id="step2">Objectives</h2>
+<p>In this lab, you learn how to perform the following tasks:</p>
+<ul>
+<li>
+<p>Create an Open API specification from the existing Quiz application REST API.</p>
+</li>
+<li>
+<p>Deploy the specification as a Cloud Endpoint.</p>
+</li>
+<li>
+<p>Provision a Compute Engine instance with the Extensible Service Proxy to host the Cloud Endpoints API.</p>
+</li>
+</ul>
+<h2 id="step3">Setup and requirements</h2>
+<p>For each lab, you get a new Google Cloud project and set of resources for a fixed time at no cost.</p>
+<ol>
+<li>
+<p>Sign in to Qwiklabs using an <strong>incognito window</strong>.</p>
+</li>
+<li>
+<p>Note the lab's access time (for example, <code>1:15:00</code>), and make sure you can finish within that time.<br>
+There is no pause feature. You can restart if needed, but you have to start at the beginning.</p>
+</li>
+<li>
+<p>When ready, click <strong>Start lab</strong>.</p>
+</li>
+<li>
+<p>Note your lab credentials (<strong>Username</strong> and <strong>Password</strong>). You will use them to sign in to the Google Cloud Console.</p>
+</li>
+<li>
+<p>Click <strong>Open Google Console</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Use another account</strong> and copy/paste credentials for <strong>this</strong> lab into the prompts.<br>
+If you use other credentials, you'll receive errors or <strong>incur charges</strong>.</p>
+</li>
+<li>
+<p>Accept the terms and skip the recovery resource page.</p>
+</li>
+</ol>
+<aside class="warning"><p><strong>Note:</strong> Do not click <strong>End Lab</strong> unless you have finished the lab or want to restart it. This clears your work and removes the project.
+  </p>
+</aside>
+<h3>Activate Google Cloud Shell</h3>
+<p>Google Cloud Shell is a virtual machine that is loaded with development tools. It offers a persistent 5GB home directory and runs on the Google Cloud.</p>
+<p>Google Cloud Shell provides command-line access to your Google Cloud resources.</p>
+<ol>
+<li>
+<p>In Cloud console, on the top right toolbar, click the Open Cloud Shell button.</p>
+<p><img alt="Highlighted Cloud Shell icon" src="https://cdn.qwiklabs.com/00tA48qOVOyHrSa1DA7LwccfwQ9Z%2BE6dkvQ1MYPHzhQ%3D"></p>
+</li>
+<li>
+<p>Click <strong>Continue</strong>.</p>
+</li>
+</ol>
+<p>It takes a few moments to provision and connect to the environment. When you are connected, you are already authenticated, and the project is set to your <em>PROJECT_ID</em>. For example:</p>
+<p><img alt="Project ID highlighted in the Cloud Shell Terminal" src="https://cdn.qwiklabs.com/hmMK0W41Txk%2B20bQyuDP9g60vCdBajIS%2B52iI2f4bYk%3D"></p>
+<p><strong>gcloud</strong> is the command-line tool for Google Cloud. It comes pre-installed on Cloud Shell and supports tab-completion.</p>
+<ul>
+<li>You can list the active account name with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud auth list
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - @.com (active)
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - google1623327_student@qwiklabs.net
+ </ql-code-block>
+<ul>
+<li>You can list the project ID with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud config list project
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+[core]
+project = 
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+[core]
+project = qwiklabs-gcp-44776a13dea667a6
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>
+  Full documentation of <strong>gcloud</strong> is available in the
+  <a href="https://cloud.google.com/sdk/gcloud" target="_blank">
+    gcloud CLI overview guide
+  </a>.
+</ql-infobox>
+<h2 id="step4">Task 1. Preparing the case study application</h2>
+<p>In this section, you access Cloud Shell, clone the git repository containing the Quiz application, configure environment variables, and run the application.</p>
+<h3>Clone source code in Cloud Shell</h3>
+<ol>
+<li>
+<p>To clone the repository for the class, execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+git clone --depth=1 https://github.com/GoogleCloudPlatform/training-data-analyst
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Create a soft link as a shortcut to the working directory:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+ln -s ~/training-data-analyst/courses/developingapps/v1.3/nodejs/cloudendpoints ~/cloudendpoints
+</ql-code-block>
+<h3>Configure and run the case study application</h3>
+<ol>
+<li>
+<p>Change to the directory that contains the sample files for this lab:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+cd ~/cloudendpoints/start
+</ql-code-block>
+<ol start="2">
+<li>
+<p>To configure the Quiz application, execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+. prepare_environment.sh
+</ql-code-block>
+<p>If prompted, enter <code>Y</code> to allow unauthenticated invocations of new function <strong>[process-feedback]</strong>.</p>
+<ql-infobox><strong>Note: This script file: </strong>
+<ul>
+<li>Creates an App Engine application.</li>
+<li>Creates the Datastore database.</li>
+<li>Exports environment variables <code>GCLOUD_PROJECT</code> and <code>GCLOUD_BUCKET.</code>
+</li>
+<li>Runs <code>npm install.</code>
+</li>
+<li>Creates entities in Cloud Datastore.</li>
+<li>Installs an Open API generator tool, <code>api2swagger.</code>
+</li>
+<li>Prints out the Google Cloud Platform Project ID.</li>
+</ul></ql-infobox>
+<p>If you see <code>ERROR: (gcloud.functions.deploy)</code>, retry the full <code>gcloud functions deploy</code> command you see after running <code>cat ./prepare_environment.sh</code>.</p>
+<p>You can run <code>gcloud functions list</code> to verify the function is created and available.</p>
+<ql-infobox><strong>Note:</strong> Warnings generated by the installation of the Open API generator can be safely ignored in this lab.</ql-infobox>
+<ol start="3">
+<li>
+<p>To run the web application, execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+npm start
+</ql-code-block>
+<p>The application is now running from Cloud Shell.</p>
+<ol start="4">
+<li>In <strong>Cloud Shell</strong>, click <strong>Web preview</strong> &gt; <strong>Preview on port 8080</strong> to preview the quiz application.</li>
+<li>Modify the URL by adding <code>/api/quizzes/places</code> to the end of the hostname. Replace <code>/?authuser=0</code> with <code>/api/quizzes/places</code>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see JSON data returned from the quiz application API corresponding to the questions in the places quiz.</ql-infobox>
+<ol start="6">
+<li>Make a note of the complete API URL to use later in this lab and save the url so you can paste it in a command in the next section.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>
+The URL will look similar to: <code>https://8080-cs-***.cloudshell.dev/api/quizzes/places</code>
+</ql-infobox>
+<p>Click <em>Check my progress</em> to verify the objective.</p>
+<ql-activity-tracking step="1">
+Configure and run the case study application
+</ql-activity-tracking>
+<h2 id="step5">Task 2. Generating an Open API specification</h2>
+<p>In this section, you will generate an Open API specification that will form the basis for deploying your Cloud Endpoint.</p>
+<h3>Create an Open API specification</h3>
+<ol>
+<li>
+<p>Open a second <strong>Cloud Shell</strong> window.</p>
+</li>
+<li>
+<p>Open a new tab by clicking the plus sign <img alt="add icon" src="https://cdn.qwiklabs.com/SVBIVNk8vcwfKB4BKiyA6ywrizKBLzqJsXvVdw5gjY4%3D">in the terminal.</p>
+</li>
+<li>
+<p>To change the directory to the Cloud Endpoints working folder, execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+cd ~/cloudendpoints/start/endpoint
+</ql-code-block>
+<ol start="4">
+<li>
+<p>Update the PATH environment variable to set the path for the <code>api2swagger</code> command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+export PATH=$PATH:`npm root -g`/api2swagger/bin
+</ql-code-block>
+<ol start="5">
+<li>
+<p>To generate the Open API specification, execute the following command, replacing <code>[API_URL_FROM_CLIPBOARD]</code> with the <strong>API URL</strong> saved in the previous step of form <code>https://8080-cs-.../api/quizzes/places</code>:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+api2swagger -e [API_URL_FROM_CLIPBOARD] -o ./quiz-api.json
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>The <code>api2swagger</code> tool will make the request against the API and display a series of prompts. If you don't complete the proper replacement, you'll see an <b>Invalid hostname</b> error.
+</ql-infobox>
+<ol start="6">
+<li>Enter responses to the <code>api2swagger</code> prompts using the following table:</li>
+</ol>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Prompt</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Response</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Title of Swagger Spec ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>Quite Interesting Quiz API</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Description of Swagger Spec ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>An API for the Quite Interesting Quiz</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Terms of Service URL</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Version of your API Program ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Contact Name?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Contact URL ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Contact Email ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>License Name ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>License URL ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Does your API support http ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>Y</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Pick Base Path from your API ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Use the up and down arrows to select:</p>
+<p><strong>❯ /api/quizzes</strong></p>
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>A verbose explanation of the operation behavior ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>Gets questions for a quiz</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>A short summary of what the operation does ? </p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>Get quiz questions</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Additional external documentation for this operation ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Unique string used to identify the operation ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>getQuizQuestions</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>A list of tags for API documentation control ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>API Path has any dynamic parameters ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>Y (Press enter key)</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Choose Dynamic Params in URL ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Use the up and down arrows to move to:<br><strong>❯◉ places</strong></p>
+<p><br>Then <b>press the space bar to select places</b>, then press enter</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Name of URL Param ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>quizName</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Description of URL Param ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>The name of the quiz</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Type of query param ?</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Use the up and down arrows to select:<br><strong>❯ string</strong></p>
+<p><code>(Press enter key)</code></p>
+</td>
+</tr>
+</table>
+<ql-infobox><strong>Note: </strong>The <code>api2swagger</code> tool will display the output for the Open API specification.
+</ql-infobox>
+<h3>Edit the Open API specification</h3>
+<ol>
+<li>In <strong>Cloud Shell</strong>, click <strong>Open Editor</strong>.</li>
+</ol>
+<p>You may need to click <strong>Open in New Window</strong> if third-party cookie blocking is enabled.</p>
+<ol start="2">
+<li>Navigate to <strong>cloudendpoints/start/endpoint</strong>.</li>
+<li>In the <strong>Cloud Shell Code Editor</strong>, open <code>quiz-api.json</code>.</li>
+<li>Replace the value for the <code>"host"</code> key with a hostname using a string in the form <code>quiz-api.endpoints.[Project-ID].cloud.goog</code>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>The following sample shows the modification in the <b>host</b> line.
+<p></p>Be sure you replace <b>[GCP-Project-ID]</b> with your GCP Project ID.
+<p></p>You can find the GCP Project ID in the left panel of the lab instructions under your credentials.
+</ql-infobox>
+<h4>endpoint/quiz-api.json</h4>
+<ql-code-block language="json">
+{
+    "swagger": "2.0",
+    "host": "quiz-api.endpoints.qwiklabs-gcp-XX-XXXX.cloud.goog",
+    "schemes": [
+      "https",
+      "http"
+    ],
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>When you deploy your Open API specification in the next section, the Service Management API will use the host value in your deployment configuration file to create a new Cloud Endpoints service with the name <code>quiz-api.endpoints.[PROJECT-ID].cloud.goog</code> (if it does not exist), and then configure the service according to your OpenAPI configuration file.
+<p></p>Cloud Endpoints uses DNS-compatible names to uniquely identify services. Because projects in Google Cloud Platform are guaranteed to have a globally unique name, you can use your project name to create a unique API service name. You can also map your own DNS name to your API.
+</ql-infobox>
+<ol start="5">
+<li>
+<p>Save the file.</p>
+</li>
+</ol>
+<h3>Deploy the API Specification to Cloud Endpoints</h3>
+<ol>
+<li>
+<p>Click Open Terminal to return to Cloud Shell.</p>
+</li>
+<li>
+<p>To deploy the Open API specification as a Cloud Endpoint, execute the
+following command in the <strong>Cloud Shell</strong> window:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+gcloud endpoints services deploy quiz-api.json
+</ql-code-block>
+<p>If you see an error like <code>PERMISSION_DENIED: Ownership for domain name</code>, make sure your <strong>host</strong> in the <code>quiz-api.json</code> file matches the suggested format including the correct your project-id.</p>
+<ql-infobox><strong>Note: </strong>The service definition takes a few minutes to deploy. 
+You will see a warning related to the API being available to all clients without supplying a key.
+</ql-infobox>
+<ol start="3">
+<li>
+<p>To view the Open API configuration name, execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+gcloud endpoints configs list --service="quiz-api.endpoints.$GOOGLE_CLOUD_PROJECT.cloud.goog"
+</ql-code-block>
+<p>Notice the project-id has been inserted. You can copy the <strong>service</strong> from the output of your <code>deploy</code> command.</p>
+<ql-infobox><strong>Note: </strong>The service configuration will be returned, including the 
+<b>CONFIG_ID</b> and <b>SERVICE_NAME</b>. You will need the both values in the next section.
+</ql-infobox>
+<h2 id="step6">Task 3. Deploying the API backend</h2>
+<p>In this section, you will provision a Compute Engine instance to run the API implementation and the Cloud Endpoints Extensible Service Proxy.</p>
+<h3>Create a Compute Engine instance</h3>
+<ol>
+<li>In the <strong>Cloud Platform Console</strong>, on the <strong>Navigation menu</strong>, click <strong>Compute Engine</strong>.</li>
+<li>On the <strong>VM Instances</strong> page, click <strong>Create Instance</strong>.</li>
+<li>On the <strong>Create an instance</strong> page, specify the following:</li>
+</ol>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Property</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Value</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Name</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>endpoint-host</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Region</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>us-central1</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Zone</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><code>us-central1-a</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Boot disk</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Make sure <b>Debian GNU/Linux 11 (bullseye)</b> is selected</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Identity &amp; API access &gt; Access scopes</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Allow full access to all Cloud APIs</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Firewall</p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Allow HTTP traffic</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>Advanced options &gt; Management &gt; Metadata &gt; Add item</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Add the following keys and values</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Metadata Key</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Value</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p><code>endpoints-service-config-id</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>The <code>CONFIG_ID</code> for the endpoint in the form:<br><code>yyyy-mm-ddr0</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p><code>endpoints-service-name</code></p>
+</td>
+<td colspan="1" rowspan="1">
+<p>The <code>SERVICE_NAME</code> for the endpoint in the form:</p>
+<p><code>quiz-api.endpoints.&lt;Project-ID&gt;.cloud.goog</code></p>
+</td>
+</tr>
+</table>
+<ol start="4">
+<li>Click <strong>Create</strong>.</li>
+</ol>
+<p>Wait for the provisioning of the VM to complete.</p>
+<ql-infobox><strong>Note: </strong>The Compute Engine instance will take around 20 seconds to provision with Debian.
+</ql-infobox>
+<h3>Install and run the API backend</h3>
+<ol>
+<li>
+<p>Return to the <strong>Cloud Shell</strong> window.</p>
+</li>
+<li>
+<p>To ensure that the working directory is set to the <code>endpoint</code> folder, execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+cd ~/cloudendpoints/start/endpoint/
+</ql-code-block>
+<ol start="3">
+<li>
+<p>To copy the application source files from <strong>Cloud Shell</strong> to <strong>endpoint-host</strong>, execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+gcloud compute scp ./quiz-api endpoint-host:~/ --recurse --zone=us-central1-a
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>You may be prompted to create an SSH key. You can press the ENTER key for each prompt including the Y to create the .ssh directory.
+<p></p>It may take a few seconds to copy the files.
+</ql-infobox>
+<ol start="4">
+<li>Return to the <strong>Cloud Platform Console</strong>.</li>
+<li>On the <strong>Compute Engine</strong> page, to connect to the <strong>endpoint-host</strong> virtual machine, click <strong>SSH</strong>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You may need to click twice if you have a popup blocker. It will take a few seconds to establish the SSH connection.
+</ql-infobox>
+<ol start="6">
+<li>
+<p>In the <strong>endpoint-host</strong> SSH window, install the software prerequisites:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+sudo apt-get install -y nodejs
+curl -L https://npmjs.org/install.sh | sudo sh
+</ql-code-block>
+<p>Click <em>Check my progress</em> to verify the objective.</p>
+<ql-activity-tracking step="2">
+Create a Compute Engine Instance and install the software prerequisites
+</ql-activity-tracking>
+<ol start="7">
+<li>
+<p>To run the quiz API application, execute the following commands within the
+SSH session:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+export GCLOUD_PROJECT="$(curl -H Metadata-Flavor:Google http://metadata/computeMetadata/v1/project/project-id)"
+export GCLOUD_BUCKET=$GCLOUD_PROJECT-media
+export PORT=8081
+cd ~/quiz-api
+npm install
+npm start
+</ql-code-block>
+<ol start="8">
+<li>
+<p>Return to the <strong>Cloud Platform Console</strong>, which should still display the <strong>Compute Engine</strong> VM instance list.</p>
+</li>
+<li>
+<p>Establish a second <strong>SSH</strong> connection to <strong>endpoint-host</strong>.</p>
+</li>
+<li>
+<p>In the second <strong>endpoint-host</strong> SSH window, to install the Cloud Endpoints Extensible Service Proxy by executing the following commands:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+export CLOUD_ENDPOINTS_REPO="google-cloud-endpoints-jessie"
+echo "deb http://packages.cloud.google.com/apt $CLOUD_ENDPOINTS_REPO main" | sudo tee /etc/apt/sources.list.d/google-cloud-endpoints.list
+curl --silent https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo apt-get update &amp;&amp; sudo apt-get install endpoints-runtime
+</ql-code-block>
+<ol start="11">
+<li>
+<p>Still in the second <strong>endpoint-host</strong> SSH window, execute the following command to edit the nginx configuration file:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+sudo nano /etc/default/nginx
+</ql-code-block>
+<ol start="12">
+<li>
+<p>To modify the file, add the following declaration after the existing configuration:</p>
+</li>
+</ol>
+<ql-code-block language="plaintext">
+PORT=80
+</ql-code-block>
+<ol start="13">
+<li>
+<p>Save the file (press <strong>Ctrl+O</strong> then <strong>Enter</strong>).</p>
+</li>
+<li>
+<p>Exit nano (press <strong>Ctrl+X</strong>).</p>
+</li>
+<li>
+<p>To restart nginx, execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+sudo service nginx restart
+</ql-code-block>
+<h2 id="step7">Task 4. Testing and modifying Cloud Endpoint</h2>
+<p>In this section, you will verify the deployment of the endpoint and modify the configuration to allow serving via a hostname instead of an IP address.</p>
+<h3>Invoke the Cloud Endpoint via the IP address</h3>
+<ol>
+<li>Return to the <strong>Cloud Platform Console</strong> &gt; <strong>Compute Engine</strong>.</li>
+<li>To launch a browser window, click on the <strong>endpoint-host</strong> virtual machine's External IP address.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>A JSON message reporting <b>Method does not exist</b>
+will be displayed in the new browser window. This is expected behavior, because
+you have not associated a method with "/". You do not need to take corrective
+action.
+</ql-infobox>
+<ol start="3">
+<li>Add <code>/api/quizzes/places</code> to the end of the URL.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see JSON data returned from the quiz API.
+</ql-infobox>
+<ol start="4">
+<li>In the <strong>Cloud Platform Console</strong>, on the <strong>Navigation menu</strong>, click <strong>Endpoints</strong>, and then click on your deployed endpoint.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see a monitoring page for the quiz-api endpoint. After a few minutes, you should see the request that you made against the endpoint.
+</ql-infobox>
+<h3>Modify and redeploy the Cloud Endpoint configuration</h3>
+<ol>
+<li>
+<p>Return to the <strong>Cloud Shell</strong> code editor, and select the <code>quiz-api.json</code> file.</p>
+</li>
+<li>
+<p>To allow the API to be accessed via the Cloud Endpoint hostname instead of the IP address, add the <code>"x-google-endpoints"</code> key and value shown in the following file fragment:</p>
+</li>
+</ol>
+<h4>endpoint/quiz-api.json</h4>
+<ql-code-block language="json">
+{
+  "swagger": "2.0",
+  "host": "quiz-api.endpoints.&lt;Project-ID&gt;.cloud.goog",
+  "x-google-endpoints": [ {
+      "name": "quiz-api.endpoints.&lt;Project-ID&gt;.cloud.goog",
+      "target": "&lt;endpoint-host-EXTERNAL-IP-ADDRESS&gt;" } ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+</ql-code-block>
+<ol start="3">
+<li>Change the values of <code>&lt;Project-ID&gt;</code>, and <code>&lt;endpoint-host-EXTERNAL-IP-ADDRESS&gt;</code> then save the file.</li>
+</ol>
+<p>The updated configuration should look similar to this:</p>
+<ql-code-block language="json" output="">
+{
+  "swagger": "2.0",
+  "host": "quiz-api.endpoints.qwiklabs-gcp-04-a7b3469e256f.cloud.goog",
+  "x-google-endpoints": [ {
+    "name": "quiz-api.endpoints.qwiklabs-gcp-04-a7b3469e256f.cloud.goog",
+    "target": "34.172.61.246" } ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+</ql-code-block>
+<ol start="4">
+<li>
+<p>To redeploy the API, return to the <strong>Cloud Shell</strong> window, and execute the following command:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+gcloud endpoints services deploy quiz-api.json
+</ql-code-block>
+<ol start="5">
+<li>Open a new browser tab, and navigate to: <code>http://quiz-api.endpoints.&lt;Project-ID&gt;.cloud.goog/api/quizzes/gcp</code>.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see JSON data from the GCP quiz.
+</ql-infobox>
+<h2 id="step8">Task 5. Monitoring the API</h2>
+<p>In this section you will review the monitoring output from your API.</p>
+<h3>Inspect the API in the console</h3>
+<ol>
+<li>Return to the <strong>Cloud Platform Console</strong>, and on the <strong>Navigation menu</strong>, click <strong>Endpoints</strong>, and then click on your deployed endpoint.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see an overview page for the Quiz API.
+</ql-infobox>
+<ol start="2">
+<li>Take a few minutes to review the Requests, Latency, and Error graphs.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You should see that the monitoring graphs allow you to observe the performance of your API as it executes requests from clients.
+</ql-infobox>
+<h2 id="step9">End your lab</h2>
+<p>When you have completed your lab, click <strong>End Lab</strong>. Google Cloud Skills Boost removes the resources you’ve used and cleans the account for you.</p>
+<p>You will be given an opportunity to rate the lab experience. Select the applicable number of stars, type a comment, and then click <strong>Submit</strong>.</p>
+<p>The number of stars indicates the following:</p>
+<ul>
+<li>1 star = Very dissatisfied</li>
+<li>2 stars = Dissatisfied</li>
+<li>3 stars = Neutral</li>
+<li>4 stars = Satisfied</li>
+<li>5 stars = Very satisfied</li>
+</ul>
+<p>You can close the dialog box if you don't want to provide feedback.</p>
+<p>For feedback, suggestions, or corrections, please use the <strong>Support</strong> tab.</p>
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Objectives</a></li><li><a href="#step3">Setup and requirements</a></li><li><a href="#step4">Task 1. Preparing the case study application</a></li><li><a href="#step5">Task 2. Generating an Open API specification</a></li><li><a href="#step6">Task 3. Deploying the API backend</a></li><li><a href="#step7">Task 4. Testing and modifying Cloud Endpoint</a></li><li><a href="#step8">Task 5. Monitoring the API</a></li><li><a href="#step9">End your lab</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+In this lab, you will deploy the quiz application API into Compute Engine, leveraging Cloud Endpoints to provide monitoring and logging functionality.
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+120m access
+&middot;
+120m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>introductory</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/2368">https://googlecoursera.qwiklabs.com/catalog_lab/2368</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="new_lab_review" action="/lab_reviews" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='0' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='0' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="2368" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+
